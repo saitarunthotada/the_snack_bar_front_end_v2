@@ -1,0 +1,123 @@
+.success-page { min-height: 100vh; }
+
+.success-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: slideUp 0.5s ease;
+}
+
+.success-icon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.success-inner h1 {
+  font-size: 40px;
+  color: var(--choco-800);
+}
+
+.success-sub {
+  font-size: 16px;
+  color: var(--text-light);
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.order-card {
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-md);
+  margin-top: 8px;
+  text-align: left;
+}
+
+.order-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--choco-100);
+  margin-bottom: 20px;
+}
+
+.order-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.meta-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--choco-800);
+}
+
+.meta-value.mono {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--choco-100);
+  color: var(--choco-700);
+}
+
+.status-chip.status-created { background: #FEF9E7; color: #B7950B; }
+.status-chip.status-confirmed { background: #E8F8F5; color: #1E8449; }
+.status-chip.status-delivered { background: #EAFAF1; color: #1E8449; }
+.status-chip.status-cancelled { background: #FDEDEC; color: #C0392B; }
+
+.order-items-list h3 {
+  font-size: 16px;
+  color: var(--choco-800);
+  margin-bottom: 12px;
+}
+
+.success-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text-mid);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--choco-50);
+}
+
+.success-item:last-child { border-bottom: none; }
+
+.continue-btn {
+  padding: 14px 32px;
+  background: var(--choco-800);
+  color: var(--cream);
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 12px;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-block;
+}
+
+.continue-btn:hover {
+  background: var(--choco-600);
+  transform: scale(1.03);
+}

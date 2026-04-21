@@ -1,0 +1,118 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 24, 16, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.modal-header h2 {
+  font-size: 26px;
+  color: var(--choco-800);
+  margin-bottom: 8px;
+}
+
+.modal-header p {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.modal-form input,
+.modal-form textarea,
+.modal-form select {
+  padding: 12px 16px;
+  border: 1.5px solid var(--choco-200);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text-dark);
+  background: var(--choco-50);
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus,
+.modal-form select:focus {
+  border-color: var(--choco-500);
+  box-shadow: var(--shadow-glow);
+}
+
+.modal-error {
+  font-size: 13px;
+  color: var(--error);
+  text-align: center;
+}
+
+.modal-submit {
+  padding: 14px;
+  background: var(--choco-800);
+  color: var(--cream);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-submit:hover:not(:disabled) {
+  background: var(--choco-600);
+  transform: scale(1.01);
+}
+
+.modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  padding: 4px;
+}

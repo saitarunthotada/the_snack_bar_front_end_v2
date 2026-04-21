@@ -1,0 +1,106 @@
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--choco-900);
+  padding: 20px;
+}
+
+.admin-login-card {
+  background: var(--choco-800);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  animation: slideUp 0.4s ease;
+}
+
+.admin-login-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--choco-900);
+}
+
+.admin-login-card h1 {
+  font-size: 28px;
+  color: var(--cream);
+  margin-bottom: 6px;
+}
+
+.admin-login-card > p {
+  font-size: 13px;
+  color: var(--choco-300);
+  margin-bottom: 32px;
+  letter-spacing: 0.04em;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.admin-login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--choco-300);
+}
+
+.admin-login-form input {
+  padding: 12px 16px;
+  background: var(--choco-700);
+  border: 1.5px solid var(--choco-600);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--cream);
+  transition: border-color 0.2s;
+}
+
+.admin-login-form input::placeholder { color: var(--choco-400); }
+.admin-login-form input:focus { border-color: var(--gold); }
+
+.login-error {
+  font-size: 13px;
+  color: #FF8A80;
+  text-align: center;
+}
+
+.admin-login-form button {
+  padding: 14px;
+  background: var(--gold);
+  color: var(--choco-900);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.admin-login-form button:hover:not(:disabled) {
+  background: var(--gold-light);
+  transform: scale(1.02);
+}
+
+.admin-login-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

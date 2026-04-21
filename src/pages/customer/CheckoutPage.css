@@ -1,0 +1,240 @@
+.checkout-page { min-height: 100vh; }
+
+.checkout-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.checkout-inner h1 {
+  font-size: 36px;
+  color: var(--choco-800);
+  margin: 16px 0 32px;
+}
+
+.checkout-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .checkout-layout { grid-template-columns: 1fr; }
+}
+
+.checkout-form {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.checkout-form h2 {
+  font-size: 22px;
+  color: var(--choco-800);
+}
+
+.checkout-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-mid);
+}
+
+.checkout-form textarea {
+  padding: 12px 16px;
+  border: 1.5px solid var(--choco-200);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text-dark);
+  background: var(--choco-50);
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.checkout-form textarea:focus {
+  border-color: var(--choco-500);
+  box-shadow: var(--shadow-glow);
+}
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loc-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--choco-300);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.loc-btn:hover:not(:disabled) {
+  border-color: var(--choco-600);
+  color: var(--choco-700);
+}
+
+.loc-btn.active {
+  background: var(--choco-100);
+  border-color: var(--choco-500);
+  color: var(--choco-700);
+}
+
+.loc-clear {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--error);
+  background: none;
+  padding: 6px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--error);
+  transition: background 0.2s, color 0.2s;
+}
+
+.loc-clear:hover {
+  background: #fdedec;
+}
+
+.place-order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background: var(--choco-800);
+  color: var(--cream);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  transition: background 0.2s, transform 0.15s;
+  margin-top: 8px;
+}
+
+.place-order-btn:hover:not(:disabled) {
+  background: var(--choco-600);
+  transform: scale(1.01);
+}
+
+.place-order-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkout-summary {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 80px;
+}
+
+.checkout-summary h2 {
+  font-size: 20px;
+  color: var(--choco-800);
+  margin-bottom: 20px;
+}
+
+.checkout-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.ci-name { color: var(--text-dark); }
+.ci-qty { color: var(--text-light); font-size: 12px; margin-left: 4px; }
+.ci-total { font-weight: 600; color: var(--choco-700); }
+
+.checkout-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--choco-800);
+  padding-top: 16px;
+  border-top: 1.5px solid var(--choco-200);
+}
+/* MAP */
+.map-wrapper {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid var(--choco-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.map-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--choco-700);
+  background: var(--choco-100);
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--choco-200);
+}
+
+.map-label::after {
+  content: "· drag pin to adjust";
+  font-weight: 400;
+  opacity: 0.6;
+  margin-left: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.map-container {
+  width: 100%;
+  height: 260px;
+}
+
+.map-coords {
+  font-size: 11px;
+  color: var(--text-light);
+  background: var(--choco-50);
+  padding: 6px 14px;
+  font-family: monospace;
+  text-align: right;
+  border-top: 1px solid var(--choco-200);
+}
+

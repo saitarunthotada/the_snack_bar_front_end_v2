@@ -31,10 +31,11 @@
 }
 
 /* BRAND */
+/* BRAND */
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
 
   transition: transform 0.25s ease;
@@ -44,14 +45,40 @@
   transform: translateY(-1px);
 }
 
-.brand-icon {
-  color: var(--choco-600);
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
+/* 🔥 LOGO IMAGE FIX */
+.brand-logo {
+  height: 36px;       /* CONTROL SIZE HERE */
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
-.navbar-brand:hover .brand-icon {
-  transform: rotate(-8deg) scale(1.08);
+/* TEXT WRAPPER */
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+/* NAME */
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+
+  background: linear-gradient(135deg, #3e2723, #8b5e3c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  letter-spacing: -0.3px;
+}
+
+/* TAGLINE */
+.brand-tagline {
+  font-size: 10px;
+  color: rgba(0,0,0,0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* gradient text = instant premium */

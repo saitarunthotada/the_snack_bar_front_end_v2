@@ -18,7 +18,7 @@ export default function AdminDashboard() {
       <aside className="admin-sidebar">
         <div className="sidebar-brand">
           <Cookie size={22} />
-          <span>Snack Bar</span>
+          <span>The Snack Bar</span>
         </div>
 
         <nav className="sidebar-nav">

@@ -6,16 +6,23 @@ import './Navbar.css'
 
 export default function Navbar() {
   const { itemCount } = useCart()
-  const location = useLocation()
 
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <Link to="/" className="navbar-brand">
-          <Cookie size={22} className="brand-icon" />
-          <span className="brand-name">The Snack Bar</span>
-          <span className="brand-tagline">Home of Chocodew Treats</span>
-        </Link>
+<Link to="/" className="navbar-brand">
+  <img 
+    src="/TheSnackBarLogo.png" 
+    alt="The Snack Bar" 
+    className="brand-logo"
+  />
+
+  <div className="brand-text">
+    <span className="brand-name">The Snack Bar</span>
+    <span className="brand-tagline">Home of Chocodew Treats</span>
+  </div>
+</Link>
+
         <Link to="/cart" className="cart-btn">
           <ShoppingCart size={20} />
           {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}

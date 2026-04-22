@@ -19,7 +19,7 @@ export default function AdminProductsPage() {
   const [imagePreview, setImagePreview] = useState(null)
   const [saving, setSaving] = useState(false)
   const [invModal, setInvModal] = useState(null) // product for inventory update
-  const [invForm, setInvForm] = useState({ quantity: 0, isAvailable: true })
+  const [invForm, setInvForm] = useState({ quantity: 0 })
   const fileRef = useRef()
 
   const PAGE_SIZE = 10
@@ -56,7 +56,7 @@ export default function AdminProductsPage() {
 
   const openEdit = (p) => {
     setEditProduct(p)
-    setForm({ name: p.name, description: p.description || '', price: p.price, active: p.available })
+    setForm({ name: p.name, description: p.description || '', price: p.price, active: p.active })
     setImageFile(null)
     setImagePreview(p.imageUrl || null)
     setShowForm(true)
@@ -110,12 +110,12 @@ export default function AdminProductsPage() {
 
   const openInventory = (p) => {
     setInvModal(p)
-    setInvForm({ quantity: p.quantity, isAvailable: p.available })
+    setInvForm({ quantity: p.quantity })
   }
 
   const handleInventorySave = async () => {
     try {
-      await adminApi.updateInventory(invModal.id, invForm.quantity, invForm.isAvailable)
+      await adminApi.updateInventory(invModal.id, invForm.quantity)
       toast.success('Inventory updated!')
       setInvModal(null)
       fetchProducts(page, search)
@@ -162,14 +162,14 @@ export default function AdminProductsPage() {
       ) : (
         <div className="ap-grid">
           {products.map(p => (
-            <div key={p.id} className={`product-admin-card ${!p.available ? 'inactive' : ''}`}>
+            <div key={p.id} className={`product-admin-card ${!p.active ? 'inactive' : ''}`}>
               <div className="pac-image">
                 {p.imageUrl
                   ? <img src={p.imageUrl} alt={p.name} />
                   : <div className="pac-no-img"><ImageOff size={24} /></div>
                 }
-                <span className={`pac-status ${p.available ? 'avail' : 'unavail'}`}>
-                  {p.available ? 'Active' : 'Inactive'}
+                <span className={`pac-status ${p.active ? 'avail' : 'unavail'}`}>
+                  {p.active ? 'Active' : 'Inactive'}
                 </span>
               </div>
               <div className="pac-body">
@@ -269,12 +269,7 @@ export default function AdminProductsPage() {
                   onChange={e => setInvForm(p => ({ ...p, quantity: parseInt(e.target.value) || 0 }))}
                 />
               </label>
-              <label className="toggle-label">
-                <span>Available for sale</span>
-                <button type="button" className="toggle-btn" onClick={() => setInvForm(p => ({ ...p, isAvailable: !p.isAvailable }))}>
-                  {invForm.isAvailable ? <ToggleRight size={28} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={28} style={{ color: 'var(--choco-300)' }} />}
-                </button>
-              </label>
+
               <button className="modal-submit" onClick={handleInventorySave}>
                 Save Inventory
               </button>

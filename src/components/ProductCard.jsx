@@ -7,6 +7,7 @@ export default function ProductCard({ product, onNeedIdentity }) {
   const { cartId, cart, addToCart } = useCart()  // ← remove `loading` from destructure
   const [imgError, setImgError] = useState(false)
   const [adding, setAdding] = useState(false)
+  
 
   const cartItem = cart?.items?.find(i => i.productId === product.id)
   const quantity = cartItem?.quantity || 0

@@ -164,10 +164,9 @@ export const adminApi = {
    * PATCH /api/admin/products/{productId}/inventory
    * Body: { quantity, isAvailable }
    */
-  updateInventory: async (productId, quantity, isAvailable) => {
-    const res = await api.patch(`${ADMIN_PREFIX}/products/${productId}/inventory`, {
-      quantity,
-      isAvailable,
+  updateInventory: async (productId, quantity) => {
+    const res = await api.patch(`/admin/products/${productId}/inventory`, {
+      quantity
     })
     return res.data
   },

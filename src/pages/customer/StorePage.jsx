@@ -52,7 +52,10 @@ export default function StorePage() {
     }
   }, [])
 
+
   useEffect(() => { fetchProducts(page) }, [page, fetchProducts])
+  console.log(products)
+
 
   const handleNeedIdentity = (productId) => {
     setPendingProductId(productId)
@@ -83,7 +86,7 @@ export default function StorePage() {
               Order Now <ArrowDown size={15} />
             </button>
             {!cartId && (
-              <button className="hero-cta hero-cta--ghost" onClick={() => handleNeedIdentity(null)}>
+              <button className="hero-cta hero-cta--g`ho`st" onClick={() => handleNeedIdentity(null)}>
                 Sign In
               </button>
             )}

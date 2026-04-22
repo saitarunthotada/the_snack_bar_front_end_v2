@@ -17,23 +17,31 @@ export default function AdminDashboard() {
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="sidebar-brand">
-          <Cookie size={22} />
+          <Cookie size={20} />
           <span>The Snack Bar</span>
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink to="/admin/products" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <Package size={18} />
+          <NavLink
+            to="/admin/products"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <Package size={17} />
             Products
           </NavLink>
-          <NavLink to="/admin/orders" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <ShoppingBag size={18} />
+          <NavLink
+            to="/admin/orders"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <ShoppingBag size={17} />
             Orders
           </NavLink>
         </nav>
 
+        <div className="sidebar-divider" />
+
         <button className="sidebar-logout" onClick={handleLogout}>
-          <LogOut size={16} />
+          <LogOut size={15} />
           Logout
         </button>
       </aside>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { adminApi } from '../../services/api'
-import { Search, ChevronDown, ChevronUp, MapPin } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './AdminOrdersPage.css'
 
@@ -39,7 +39,6 @@ export default function AdminOrdersPage() {
     setLoading(true)
     try {
       const data = await adminApi.getOrders(s, p, PAGE_SIZE)
-      // data is Spring Page: { content, totalElements, number, size }
       setOrders(data.content || [])
       setTotalElements(data.totalElements || 0)
     } catch (err) {
@@ -102,9 +101,9 @@ export default function AdminOrdersPage() {
         <div className="ao-list">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="order-row skeleton-row">
-              <div className="skeleton" style={{ height: 20, width: '30%' }} />
-              <div className="skeleton" style={{ height: 16, width: '20%' }} />
-              <div className="skeleton" style={{ height: 16, width: '15%' }} />
+              <div className="skeleton" style={{ height: 18, width: '28%' }} />
+              <div className="skeleton" style={{ height: 14, width: '18%' }} />
+              <div className="skeleton" style={{ height: 14, width: '14%' }} />
             </div>
           ))}
         </div>
@@ -114,9 +113,12 @@ export default function AdminOrdersPage() {
         <div className="ao-list">
           {orders.map(order => (
             <div key={order.orderId} className="order-row">
-              <div className="order-row-main" onClick={() => setExpandedId(expandedId === order.orderId ? null : order.orderId)}>
+              <div
+                className="order-row-main"
+                onClick={() => setExpandedId(expandedId === order.orderId ? null : order.orderId)}
+              >
                 <div className="or-left">
-                  <span className="or-id mono">#{order.orderId?.slice(0, 8)}</span>
+                  <span className="or-id">#{order.orderId?.slice(0, 8)}</span>
                   <div>
                     <p className="or-name">{order.customerName}</p>
                     <p className="or-phone">{order.phone}</p>
@@ -147,7 +149,7 @@ export default function AdminOrdersPage() {
                     }
                   </div>
 
-                  {!isFinal(order.status) && (
+                  {!isFinal(order.status) ? (
                     <div className="od-status-change">
                       <h4>Update Status</h4>
                       <div className="status-buttons">
@@ -158,13 +160,15 @@ export default function AdminOrdersPage() {
                             onClick={() => handleStatusChange(order.orderId, s)}
                             disabled={updatingId === order.orderId}
                           >
-                            {updatingId === order.orderId ? <span className="spinner dark" /> : STATUS_LABELS[s]}
+                            {updatingId === order.orderId
+                              ? <span className="spinner dark" />
+                              : STATUS_LABELS[s]
+                            }
                           </button>
                         ))}
                       </div>
                     </div>
-                  )}
-                  {isFinal(order.status) && (
+                  ) : (
                     <p className="od-final">This order is in a final state and cannot be changed.</p>
                   )}
                 </div>

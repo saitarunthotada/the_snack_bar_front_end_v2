@@ -13,22 +13,31 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [editProduct, setEditProduct] = useState(null) // null = create
+  const [editProduct, setEditProduct] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [saving, setSaving] = useState(false)
-  const [invModal, setInvModal] = useState(null) // product for inventory update
+  const [invModal, setInvModal] = useState(null)
   const [invForm, setInvForm] = useState({ quantity: 0 })
   const fileRef = useRef()
 
   const PAGE_SIZE = 10
 
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return
+      setShowForm(false)
+      setInvModal(null)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
   const fetchProducts = async (p = page, s = search) => {
     setLoading(true)
     try {
       const data = await adminApi.getProducts(s, p, PAGE_SIZE)
-      // data: { items: AdminProductResponse[], total, page, size }
       setProducts(data.items)
       setTotal(data.total)
     } catch (err) {
@@ -130,13 +139,13 @@ export default function AdminProductsPage() {
     <div className="admin-products">
       <div className="ap-header">
         <h1>Products</h1>
-        <button className="btn-primary" onClick={openCreate}>
-          <Plus size={16} /> Add Product
+        <button type="button" className="btn-primary" onClick={openCreate}>
+          <Plus size={15} /> Add Product
         </button>
       </div>
 
       <form className="search-bar" onSubmit={handleSearch}>
-        <Search size={16} />
+        <Search size={15} />
         <input
           placeholder="Search products…"
           value={search}
@@ -149,9 +158,9 @@ export default function AdminProductsPage() {
         <div className="ap-grid">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="product-admin-card skeleton-card">
-              <div className="skeleton" style={{ height: 140 }} />
-              <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div className="skeleton" style={{ height: 16, width: '60%' }} />
+              <div className="skeleton" style={{ height: 150 }} />
+              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="skeleton" style={{ height: 15, width: '65%' }} />
                 <div className="skeleton" style={{ height: 13, width: '40%' }} />
               </div>
             </div>
@@ -166,7 +175,7 @@ export default function AdminProductsPage() {
               <div className="pac-image">
                 {p.imageUrl
                   ? <img src={p.imageUrl} alt={p.name} />
-                  : <div className="pac-no-img"><ImageOff size={24} /></div>
+                  : <div className="pac-no-img"><ImageOff size={26} /></div>
                 }
                 <span className={`pac-status ${p.active ? 'avail' : 'unavail'}`}>
                   {p.active ? 'Active' : 'Inactive'}
@@ -179,14 +188,14 @@ export default function AdminProductsPage() {
                   <span className="pac-qty">Stock: {p.quantity}</span>
                 </div>
                 <div className="pac-actions">
-                  <button className="pac-btn" onClick={() => openInventory(p)} title="Update Inventory">
-                    <ToggleLeft size={15} /> Inventory
+                  <button type="button" className="pac-btn" onClick={() => openInventory(p)} title="Update Inventory">
+                    <ToggleLeft size={14} /> Stock
                   </button>
-                  <button className="pac-btn" onClick={() => openEdit(p)} title="Edit">
-                    <Pencil size={15} />
+                  <button type="button" className="pac-btn" onClick={() => openEdit(p)} title="Edit">
+                    <Pencil size={14} />
                   </button>
-                  <button className="pac-btn danger" onClick={() => handleDelete(p.id)} title="Delete">
-                    <Trash2 size={15} />
+                  <button type="button" className="pac-btn danger" onClick={() => handleDelete(p.id)} title="Delete">
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -197,51 +206,92 @@ export default function AdminProductsPage() {
 
       {totalPages > 1 && (
         <div className="ap-pagination">
-          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>← Prev</button>
+          <button type="button" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>← Prev</button>
           <span>{page + 1} / {totalPages}</span>
-          <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>Next →</button>
+          <button type="button" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>Next →</button>
         </div>
       )}
 
-      {/* CREATE / EDIT FORM MODAL */}
+      {/* CREATE / EDIT MODAL */}
       {showForm && (
         <div className="modal-backdrop" onClick={() => setShowForm(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
+          <div className="modal-box modal-box--compact" onClick={e => e.stopPropagation()}>
             <div className="mbox-header">
-              <h2>{editProduct ? 'Edit Product' : 'Add New Product'}</h2>
-              <button onClick={() => setShowForm(false)}><X size={20} /></button>
+              <h2>{editProduct ? 'Edit Product' : 'New Product'}</h2>
+              <button type="button" onClick={() => setShowForm(false)}><X size={18} /></button>
             </div>
-            <form onSubmit={handleSave} className="modal-form">
-              {/* Image upload */}
-              <div className="image-upload-area" onClick={() => fileRef.current?.click()}>
-                {imagePreview
-                  ? <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }} />
-                  : <div className="iua-placeholder"><ImageOff size={28} /><span>Click to upload image (optional)</span></div>
-                }
-                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={handleImageChange} />
-              </div>
-              {imageFile && <p className="img-hint">New image selected: {imageFile.name}</p>}
 
-              <label>
-                Product Name *
-                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
-              </label>
-              <label>
+            <form onSubmit={handleSave} className="modal-form modal-form--compact">
+
+              {/* Image + Name/Price side by side */}
+              <div className="form-row-top">
+                <div
+                  className="image-upload-area image-upload-area--small"
+                  onClick={() => fileRef.current?.click()}
+                  title="Click to upload"
+                >
+                  {imagePreview
+                    ? <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <div className="iua-placeholder iua-placeholder--small">
+                        <ImageOff size={18} />
+                        <span>Image</span>
+                      </div>
+                  }
+                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={handleImageChange} />
+                </div>
+
+                <div className="form-col-right">
+                  <label className="field-label">
+                    Name *
+                    <input
+                      className="field-input"
+                      value={form.name}
+                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Product name"
+                      required
+                    />
+                  </label>
+                  <label className="field-label">
+                    Price (₹) *
+                    <input
+                      className="field-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={form.price}
+                      onChange={e => setForm(p => ({ ...p, price: e.target.value }))}
+                      placeholder="0.00"
+                      required
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Description full-width */}
+              <label className="field-label">
                 Description
-                <textarea rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+                <textarea
+                  className="field-input"
+                  rows={2}
+                  value={form.description}
+                  onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Optional short description"
+                />
               </label>
-              <label>
-                Price (₹) *
-                <input type="number" step="0.01" min="0" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} required />
-              </label>
+
+              {/* Active toggle (edit only) */}
               {editProduct && (
-                <label className="toggle-label">
-                  <span>Active</span>
+                <div className="toggle-row">
+                  <span className="field-label" style={{ margin: 0 }}>Active</span>
                   <button type="button" className="toggle-btn" onClick={() => setForm(p => ({ ...p, active: !p.active }))}>
-                    {form.active ? <ToggleRight size={28} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={28} style={{ color: 'var(--choco-300)' }} />}
+                    {form.active
+                      ? <ToggleRight size={28} style={{ color: '#1a7a40' }} />
+                      : <ToggleLeft  size={28} style={{ color: '#c0a080' }} />
+                    }
                   </button>
-                </label>
+                </div>
               )}
+
               <button type="submit" className="modal-submit" disabled={saving}>
                 {saving ? <span className="spinner" /> : (editProduct ? 'Save Changes' : 'Create Product')}
               </button>
@@ -253,25 +303,25 @@ export default function AdminProductsPage() {
       {/* INVENTORY MODAL */}
       {invModal && (
         <div className="modal-backdrop" onClick={() => setInvModal(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
+          <div className="modal-box modal-box--compact" onClick={e => e.stopPropagation()}>
             <div className="mbox-header">
-              <h2>Update Inventory</h2>
-              <button onClick={() => setInvModal(null)}><X size={20} /></button>
+              <h2>Update Stock</h2>
+              <button type="button" onClick={() => setInvModal(null)}><X size={18} /></button>
             </div>
             <p className="inv-product-name">{invModal.name}</p>
-            <div className="modal-form">
-              <label>
-                Stock Quantity
+            <div className="modal-form modal-form--compact">
+              <label className="field-label">
+                Quantity
                 <input
+                  className="field-input"
                   type="number"
                   min="0"
                   value={invForm.quantity}
                   onChange={e => setInvForm(p => ({ ...p, quantity: parseInt(e.target.value) || 0 }))}
                 />
               </label>
-
-              <button className="modal-submit" onClick={handleInventorySave}>
-                Save Inventory
+              <button type="button" className="modal-submit" onClick={handleInventorySave}>
+                Save
               </button>
             </div>
           </div>

@@ -4,61 +4,82 @@ import Navbar from '../../components/Navbar'
 import './OrderSuccessPage.css'
 
 const STATUS_LABELS = {
-  CREATED: 'Order Received',
-  CONFIRMED: 'Confirmed',
-  PREPARING: 'Preparing',
-  OUT_FOR_DELIVERY: 'Out for Delivery',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
+  CREATED:           'Order Received',
+  CONFIRMED:         'Confirmed',
+  PREPARING:         'Preparing',
+  OUT_FOR_DELIVERY:  'Out for Delivery',
+  DELIVERED:         'Delivered',
+  CANCELLED:         'Cancelled',
 }
 
 export default function OrderSuccessPage() {
   const { state } = useLocation()
-  // state.order: { orderId, status, totalAmount, items: [{productId, productName, price, quantity}] }
   const order = state?.order
 
   return (
     <div className="success-page">
       <Navbar />
       <div className="success-inner">
-        <div className="success-icon">🎉</div>
-        <h1>Order Placed!</h1>
+        {/* Animated icon */}
+        <div className="success-burst">
+          <div className="success-ring" />
+          <div className="success-ring" />
+          <div className="success-circle">
+            <span className="success-icon-inner">🍫</span>
+          </div>
+        </div>
+
+        <h1 className="success-title">Order Placed!</h1>
         <p className="success-sub">
-          Your treats are on their way. We'll notify you when the status changes.
+          Your treats are being prepared with care. We'll reach out on your phone once the order is on its way.
         </p>
 
         {order && (
           <div className="order-card">
-            <div className="order-meta">
-              <div>
-                <span className="meta-label">Order ID</span>
-                <span className="meta-value mono">{order.orderId?.slice(0, 8)}…</span>
+            {/* Card header */}
+            <div className="order-card-header">
+              <div className="order-id-group">
+                <span className="order-id-label">Order ID</span>
+                <span className="order-id-value">#{order.orderId?.slice(0, 8).toUpperCase()}…</span>
               </div>
-              <div>
-                <span className="meta-label">Status</span>
-                <span className={`status-chip status-${order.status?.toLowerCase()}`}>
-                  {STATUS_LABELS[order.status] || order.status}
-                </span>
-              </div>
-              <div>
-                <span className="meta-label">Total</span>
+              <span className={`status-chip status-${order.status?.toLowerCase()}`}>
+                {STATUS_LABELS[order.status] || order.status}
+              </span>
+            </div>
+
+            {/* Meta grid */}
+            <div className="order-card-meta">
+              <div className="meta-cell">
+                <span className="meta-label">Total Amount</span>
                 <span className="meta-value">₹{Number(order.totalAmount).toFixed(2)}</span>
+              </div>
+              <div className="meta-cell">
+                <span className="meta-label">Items</span>
+                <span className="meta-value">{order.items?.reduce((s, i) => s + i.quantity, 0) || '—'}</span>
               </div>
             </div>
 
-            <div className="order-items-list">
-              <h3>Items</h3>
+            {/* Items */}
+            <div className="order-items-section">
+              <h3>Items Ordered</h3>
               {order.items?.map(item => (
                 <div key={item.productId} className="success-item">
-                  <span>{item.productName} × {item.quantity}</span>
-                  <span>₹{(Number(item.price) * item.quantity).toFixed(2)}</span>
+                  <span className="success-item-name">
+                    {item.productName}
+                    <span className="success-item-qty"> ×{item.quantity}</span>
+                  </span>
+                  <span className="success-item-total">
+                    ₹{(Number(item.price) * item.quantity).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <Link to="/" className="continue-btn">Continue Shopping 🍫</Link>
+        <Link to="/" className="continue-btn">
+          Continue Shopping 🍪
+        </Link>
       </div>
     </div>
   )

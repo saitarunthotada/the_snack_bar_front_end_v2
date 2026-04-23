@@ -2,11 +2,16 @@
    STORE PAGE — Premium chocolate shop
 ══════════════════════════════════════════ */
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 .store-page {
   min-height: 100vh;
   background: var(--cream);
+  overflow-x: hidden; /* ← add this */
+  width: 100%;        /* ← add this */
 }
-
 /* ═══════════════════════════════
    HERO
 ═══════════════════════════════ */
@@ -714,4 +719,9 @@
   .hero-trust           { gap: 14px; }
   .store-main-header    { flex-direction: column; align-items: flex-start; }
   .products-grid        { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* ← add these */
+  .store-footer-inner   { grid-template-columns: 1fr; }
+  .delivery-note        { flex-wrap: wrap; }
+  .contact-bar          { gap: 8px; }
 }

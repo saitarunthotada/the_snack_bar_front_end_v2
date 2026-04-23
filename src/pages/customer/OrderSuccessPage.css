@@ -261,6 +261,89 @@
   background: linear-gradient(135deg, var(--choco-800), var(--choco-600));
 }
 
+/* ── Sub-text block ─────────────────────────── */
+.success-sub-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+  max-width: 420px;
+}
+
+.success-sub { margin-bottom: 0; } /* override old margin */
+
+.success-delivery-estimate,
+.success-delivery-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  background: var(--choco-50);
+  border: 1px solid var(--choco-150);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+}
+
+.success-delivery-estimate svg { color: var(--gold-deep); flex-shrink: 0; }
+.success-delivery-note svg     { color: var(--gold-deep); flex-shrink: 0; }
+
+.estimate-note {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── Support strip ─────────────────────────── */
+.order-support-strip {
+  border-top: 1px solid var(--choco-100);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--choco-50);
+}
+
+.support-strip-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.support-strip-label svg { color: var(--gold-deep); }
+
+.support-strip-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.support-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform var(--t-fast), filter var(--t-fast);
+}
+.support-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+
+.support-btn--wa   { background: #25D366; color: #fff; }
+.support-btn--call { background: var(--choco-900); color: var(--cream); }
+
+/* responsive addition */
+@media (max-width: 600px) {
+  .order-support-strip { flex-direction: column; align-items: flex-start; }
+  .support-strip-actions { width: 100%; }
+  .support-btn { flex: 1; justify-content: center; }
+}
+
 /* ── Responsive ─────────────────────────── */
 @media (max-width: 600px) {
   .success-inner { padding: 40px 16px 60px; }

@@ -177,13 +177,27 @@ export const adminApi = {
    * Spring Page: { content: AdminOrderResponse[], totalElements, number, size }
    * AdminOrderResponse: { orderId, customerName, phone, status, totalAmount, createdAt, items }
    */
-  getOrders: async (search = '', page = 0, size = 10) => {
+  getOrders: async ({
+    orderId,
+    orderIdLike,
+    phone,
+    name,
+    status,
+    page = 0,
+    size = 10
+  } = {}) => {
     const res = await api.get(`${ADMIN_PREFIX}/orders`, {
-      params: { search: search || undefined, page, size },
+      params: {
+        orderId,
+        orderIdLike,
+        phone,
+        name,
+        status,
+        page,
+        size,
+      },
     })
-    // Note: admin getOrders returns Page<AdminOrderResponse> directly in data
-    // Spring Page has: content[], totalElements, number, size
-    return res.data.data // Spring Page object
+    return res.data.data
   },
 
   /**

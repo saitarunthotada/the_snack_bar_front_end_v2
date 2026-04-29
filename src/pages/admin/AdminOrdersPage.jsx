@@ -37,11 +37,22 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async (p = page, s = search) => {
     setLoading(true)
+
     try {
-      const data = await adminApi.getOrders(s, p, PAGE_SIZE)
+      const isUUID = /^[0-9a-fA-F\-]{4,}$/.test(s)
+
+      const data = await adminApi.getOrders({
+        orderIdLike: isUUID ? s : undefined,
+        name: !isUUID ? s : undefined,
+        page: p,
+        size: PAGE_SIZE
+      })
+
       setOrders(data.content || [])
       setTotalElements(data.totalElements || 0)
+
     } catch (err) {
+      console.error(err)   // 👈 add this (important)
       toast.error(err.message)
     } finally {
       setLoading(false)
@@ -90,7 +101,7 @@ export default function AdminOrdersPage() {
       <form className="search-bar" onSubmit={handleSearch}>
         <Search size={16} />
         <input
-          placeholder="Search by customer name…"
+          placeholder="Search by Id, name..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />

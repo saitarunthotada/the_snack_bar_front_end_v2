@@ -2,38 +2,23 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Navbar from '../../components/Navbar'
 import ProductCard from '../../components/ProductCard'
 import CustomerIdentityModal from '../../components/CustomerIdentityModal'
-import { productApi } from '../../services/api'
+import { productApi, zoneApi } from '../../services/api'
 import { useCart } from '../../context/CartContext'
 import {
   ChevronLeft, ChevronRight, MessageCircle, Phone,
   Navigation, ArrowDown, Shield, Lock, Truck,
   MapPin, Star, Clock, CheckCircle, Bike,
-  Home, Leaf, Landmark, Building2, ArrowLeftRight,
-  Train, TreePine, School, Bus, Building,
-  Waves, LayoutGrid, Package, Sparkles,
-  LogIn, AlertCircle, ExternalLink, BadgeCheck
+  ExternalLink, BadgeCheck,
+  Package, Sparkles, LogIn, AlertCircle, School,
+  Radio,
 } from 'lucide-react'
 import './StorePage.css'
 
 const PAGE_SIZE = 12
 const PHONE = '919849871622'
-const WHATSAPP_MSG = encodeURIComponent('Hi! I have a question about my order 🍫')
+const WHATSAPP_MSG = encodeURIComponent('Hi! I have a question about my order.')
+const WHATSAPP_AREA_MSG = encodeURIComponent("Hi! I'd like to check if you deliver to my area.")
 const STALL_MAPS_URL = 'https://maps.app.goo.gl/YMzNUgBoYs5MW4EJA'
-
-const DELIVERY_ZONES = [
-  { name: 'Sujatha Nagar',   Icon: Home },
-  { name: 'Vepagunta',       Icon: Leaf },
-  { name: 'Simhachalam',     Icon: Landmark },
-  { name: 'Gopalapatnam',    Icon: Building2 },
-  { name: 'NAD Junction',    Icon: ArrowLeftRight },
-  { name: 'Kancharapalem',   Icon: Train },
-  { name: 'Seethammadhara',  Icon: TreePine },
-  { name: 'Seethampeta',     Icon: Home },
-  { name: 'RTC Complex',     Icon: Bus },
-  { name: 'Siripuram',       Icon: Building },
-  { name: 'Waltair Uplands', Icon: Waves },
-  { name: 'MVP Colony',      Icon: LayoutGrid },
-]
 
 const STALL_LOCATIONS = [
   {
@@ -60,6 +45,7 @@ export default function StorePage() {
   const [loading, setLoading]                   = useState(true)
   const [showModal, setShowModal]               = useState(false)
   const [pendingProductId, setPendingProductId] = useState(null)
+  const [zones, setZones]                       = useState([])
 
   const productsRef = useRef(null)
   const totalPages  = Math.ceil(total / PAGE_SIZE)
@@ -78,6 +64,10 @@ export default function StorePage() {
   }, [])
 
   useEffect(() => { fetchProducts(page) }, [page, fetchProducts])
+
+  useEffect(() => {
+    zoneApi.getActive().then(setZones).catch(() => {})
+  }, [])
 
   const handleNeedIdentity = (productId) => {
     setPendingProductId(productId)
@@ -258,14 +248,14 @@ export default function StorePage() {
           </div>
 
           <div className="zones-grid">
-            {DELIVERY_ZONES.map(({ name, Icon }) => (
-              <div key={name} className="zone-card">
+            {zones.map((zone) => (
+              <div key={zone.id} className="zone-card">
                 <span className="zone-icon-wrap">
-                  <Icon size={15} strokeWidth={1.8} />
+                  <MapPin size={15} strokeWidth={1.8} />
                 </span>
                 <div className="zone-info">
-                  <span className="zone-name">{name}</span>
-                  <span className="zone-city">Vizag</span>
+                  <span className="zone-name">{zone.name}</span>
+                  <span className="zone-city">{zone.city}</span>
                 </div>
               </div>
             ))}
@@ -275,11 +265,11 @@ export default function StorePage() {
             <MapPin size={14} strokeWidth={2} style={{ flexShrink: 0, color: 'var(--gold-deep)' }} />
             Don't see your area?&nbsp;
             <a
-              href={`https://wa.me/${PHONE}?text=${encodeURIComponent("Hi! I'd like to check if you deliver to my area 📍")}`}
+              href={`https://wa.me/${PHONE}?text=${WHATSAPP_AREA_MSG}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Ask us on WhatsApp <ExternalLink size={10} strokeWidth={2.5} style={{ display:'inline', verticalAlign:'middle' }} />
+              Ask us on WhatsApp <ExternalLink size={10} strokeWidth={2.5} style={{ display: 'inline', verticalAlign: 'middle' }} />
             </a>
             &nbsp;— we're expanding coverage regularly.
           </div>
@@ -289,7 +279,6 @@ export default function StorePage() {
       {/* ── FOOTER / PRIVACY ── */}
       <footer className="store-footer-section">
         <div className="store-footer-inner">
-          {/* Brand col */}
           <div>
             <div className="footer-col-title">The Snack Bar</div>
             <p className="footer-text">
@@ -297,7 +286,12 @@ export default function StorePage() {
               Order online or visit us at our stall at A.U. Outgate, Vizag.
             </p>
             <div className="footer-contact-links">
-              <a href={`https://wa.me/${PHONE}`} target="_blank" rel="noopener noreferrer" className="footer-contact-link footer-contact-link--wa">
+              <a
+                href={`https://wa.me/${PHONE}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-contact-link footer-contact-link--wa"
+              >
                 <MessageCircle size={13} strokeWidth={2.5} /> Chat on WhatsApp
               </a>
               <a href={`tel:+${PHONE}`} className="footer-contact-link footer-contact-link--phone">
@@ -306,7 +300,6 @@ export default function StorePage() {
             </div>
           </div>
 
-          {/* Stall locations col */}
           <div>
             <div className="footer-col-title">Our Stall</div>
             {STALL_LOCATIONS.map(stall => (
@@ -317,17 +310,21 @@ export default function StorePage() {
                 </div>
                 <p className="footer-text footer-stall-address">{stall.address}</p>
                 <p className="footer-stall-status">
-                  <span className="stall-live-dot" />
+                  <Radio size={11} strokeWidth={2.5} className="stall-live-icon" />
                   {stall.status}
                 </p>
-                <a href={stall.mapsUrl} target="_blank" rel="noopener noreferrer" className="footer-directions-link">
+                <a
+                  href={stall.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-directions-link"
+                >
                   <Navigation size={11} strokeWidth={2.5} /> Get Directions
                 </a>
               </div>
             ))}
           </div>
 
-          {/* Privacy col */}
           <div>
             <div className="footer-col-title">Privacy &amp; Data</div>
             <ul className="privacy-list">

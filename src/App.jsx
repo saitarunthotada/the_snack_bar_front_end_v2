@@ -17,6 +17,8 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminSmsLogsPage from './pages/admin/AdminSmsLogsPage'
+import AdminZonesPage from './pages/admin/AdminZonesPage'
+
 
 function AdminRoute({ children }) {
   const { isAdmin } = useAuth()
@@ -56,6 +58,7 @@ export default function App() {
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="orders" element={<AdminOrdersPage />} />
               <Route path="sms-logs" element={<AdminSmsLogsPage />} />
+              <Route path="zones" element={<AdminZonesPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

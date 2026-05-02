@@ -1,7 +1,10 @@
 import React from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
-import { Phone, MessageCircle, Clock, MapPin, CheckCircle } from 'lucide-react'
+import {
+  Phone, MessageCircle, Clock, MapPin, CheckCircle,
+  PartyPopper, ShoppingBag, Sparkles,
+} from 'lucide-react'
 import './OrderSuccessPage.css'
 
 const PHONE = '919849871622'
@@ -20,7 +23,7 @@ export default function OrderSuccessPage() {
   const { state } = useLocation()
   const order = state?.order
   const waMsg = encodeURIComponent(
-    `Hi! I'd like an update on my order #${order?.orderId?.slice(0,8).toUpperCase() ?? ''} 🍫`
+    `Hi! I'd like an update on my order #${order?.orderId?.slice(0,8).toUpperCase() ?? ''}`
   )
 
   return (
@@ -33,7 +36,11 @@ export default function OrderSuccessPage() {
           <div className="success-ring" />
           <div className="success-ring" />
           <div className="success-circle">
-            <span className="success-icon-inner">🎉</span>
+            <PartyPopper
+              size={38}
+              strokeWidth={1.6}
+              className="success-icon-inner"
+            />
           </div>
         </div>
 
@@ -105,26 +112,26 @@ export default function OrderSuccessPage() {
                 <CheckCircle size={13} strokeWidth={2} />
                 Need help or a status update?
               </div>
-                <div className="support-strip-actions">
-                  <a
-                    href={`https://wa.me/${PHONE}?text=${waMsg}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="support-btn support-btn--wa"
-                  >
-                    <MessageCircle size={13} strokeWidth={2.5} /> WhatsApp
-                  </a>
-
-                  <a href={`tel:+${PHONE}`} className="support-btn support-btn--call">
-                    <Phone size={13} strokeWidth={2.5} /> {PHONE_DISPLAY}
-                  </a>
-                </div>
+              <div className="support-strip-actions">
+                <a
+                  href={`https://wa.me/${PHONE}?text=${waMsg}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="support-btn support-btn--wa"
+                >
+                  <MessageCircle size={13} strokeWidth={2.5} /> WhatsApp
+                </a>
+                <a href={`tel:+${PHONE}`} className="support-btn support-btn--call">
+                  <Phone size={13} strokeWidth={2.5} /> {PHONE_DISPLAY}
+                </a>
+              </div>
             </div>
           </div>
         )}
 
         <Link to="/" className="continue-btn">
-          Continue Shopping 🍪
+          <ShoppingBag size={15} strokeWidth={2.2} />
+          Continue Shopping
         </Link>
       </div>
     </div>

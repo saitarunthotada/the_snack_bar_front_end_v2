@@ -177,26 +177,30 @@ export const adminApi = {
    * Spring Page: { content: AdminOrderResponse[], totalElements, number, size }
    * AdminOrderResponse: { orderId, customerName, phone, status, totalAmount, createdAt, items }
    */
-  getOrders: async ({
-    orderId,
-    orderIdLike,
-    phone,
-    name,
-    status,
-    page = 0,
-    size = 10
-  } = {}) => {
-    const res = await api.get(`${ADMIN_PREFIX}/orders`, {
-      params: {
-        orderId,
-        orderIdLike,
-        phone,
-        name,
-        status,
-        page,
-        size,
-      },
-    })
+getOrders: async ({
+  orderId,
+  orderIdLike,
+  phone,
+  name,
+  status,
+  fromDate,   // ← add
+  toDate,     // ← add
+  page = 0,
+  size = 10
+} = {}) => {
+  const res = await api.get(`${ADMIN_PREFIX}/orders`, {
+    params: {
+      orderId,
+      orderIdLike,
+      phone,
+      name,
+      status,
+      fromDate,   // ← add
+      toDate,     // ← add
+      page,
+      size,
+    },
+  }) 
     return res.data.data
   },
 
@@ -233,7 +237,35 @@ export const adminApi = {
       },
     })
     return res.data.data // Spring Page — use .content and .totalElements
+  },// GET /api/admin/zones
+  getAllZones: async () => {
+    const res = await api.get(`${ADMIN_PREFIX}/zones`)
+    return res.data.data // List<DeliveryZoneResponse>
+  },
+
+  // POST /api/admin/zones
+  createZone: async ({ name, city }) => {
+    const res = await api.post(`${ADMIN_PREFIX}/zones`, { name, city })
+    return res.data
+  },
+
+  // PATCH /api/admin/zones/{id}?active=true|false
+  toggleZone: async (id, active) => {
+    const res = await api.patch(`${ADMIN_PREFIX}/zones/${id}`, null, { params: { active } })
+    return res.data
   },
 }
 
+// ─── ZONES (public) ──────────────────────────────────────────────────────────
+export const zoneApi = {
+  /**
+   * GET /api/zones
+   * → List<DeliveryZoneResponse>
+   * DeliveryZoneResponse: { id, name, city, active }
+   */
+  getActive: async () => {
+    const res = await api.get('/zones')
+    return res.data // List<DeliveryZoneResponse>
+  },
+}
 

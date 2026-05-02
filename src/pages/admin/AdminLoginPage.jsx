@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Lock } from 'lucide-react'
@@ -9,10 +9,9 @@ export default function AdminLoginPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ username: '', password: '' })
 
-  if (isAdmin) {
-    navigate('/admin', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (isAdmin) navigate('/admin', { replace: true })
+  }, [isAdmin])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

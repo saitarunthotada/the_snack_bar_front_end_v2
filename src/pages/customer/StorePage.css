@@ -7,13 +7,14 @@
 }
 
 .store-page {
+  padding-top: 68px;
   min-height: 100vh;
   background: var(--cream);
   overflow-x: hidden; /* ← add this */
   width: 100%;        /* ← add this */
 }
 /* ═══════════════════════════════
-   HERO
+   HERO 
 ═══════════════════════════════ */
 .store-hero {
   position: relative;
@@ -383,7 +384,7 @@
 }
 
 .delivery-inner {
-  max-width: 1000px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -560,7 +561,7 @@
 }
 
 .store-footer-inner {
-  max-width: 1000px;
+  max-width: 1240px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -676,7 +677,7 @@
 .privacy-list li svg { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
 
 .footer-divider {
-  max-width: 1000px;
+  max-width: 1240px;
   margin: 32px auto 0;
   border-top: 1px solid rgba(255,255,255,0.07);
   padding-top: 20px;
@@ -715,6 +716,9 @@
 }
 
 @media (max-width: 480px) {
+  .store-page {
+    padding-top: 60px; /* mobile navbar height */
+  }
   .hero-title           { font-size: 38px; }
   .hero-trust           { gap: 14px; }
   .store-main-header    { flex-direction: column; align-items: flex-start; }

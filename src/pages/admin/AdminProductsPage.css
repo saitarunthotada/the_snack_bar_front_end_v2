@@ -1,6 +1,6 @@
 /* ─── Page ───────────────────────────────────────────── */
 .admin-products {
-  max-width: 1100px;
+  width: 100%;
   animation: pageIn 0.35s ease both;
 }
 

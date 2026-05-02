@@ -2,17 +2,16 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import { useCart } from '../../context/CartContext'
-import { orderApi } from '../../services/api'
+import { orderApi, productApi } from '../../services/api'
 import {
   ArrowLeft, MapPin, X, Navigation,
-  ShoppingBag, Shield, Lock
+  ShoppingBag, Shield, ImageOff,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './CheckoutPage.css'
 
-// Fix leaflet default marker icons broken by bundlers
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -20,6 +19,75 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
+/* ─── Chocolate Loading Overlay ── */
+const CHOCO_MESSAGES = [
+  'Melting the finest dark chocolate…',
+  'Wrapping your treats with care…',
+  'Drizzling caramel on top…',
+  'Sealing your order with love…',
+  'Getting the delivery bike ready…',
+]
+
+function ChocolateLoader() {
+  const [msgIdx, setMsgIdx] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setMsgIdx(i => (i + 1) % CHOCO_MESSAGES.length), 1800)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className="choco-loader-overlay">
+      <div className="choco-loader-card">
+        <div className="choco-bar-wrap" aria-hidden="true">
+          <svg viewBox="0 0 120 80" className="choco-bar-svg" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="112" height="72" rx="10" fill="#3d1a00" />
+            {[0,1,2,3].map(col =>
+              [0,1,2].map(row => (
+                <rect
+                  key={`${col}-${row}`}
+                  x={10 + col * 27} y={10 + row * 22}
+                  width="22" height="17" rx="3"
+                  fill="#5c2a00"
+                  className={`choco-segment seg-${col * 3 + row}`}
+                />
+              ))
+            )}
+            <rect x="10" y="8" width="50" height="4" rx="2" fill="rgba(255,220,160,0.13)" />
+          </svg>
+          <div className="choco-drips" aria-hidden="true">
+            {[0,1,2,3].map(i => <div key={i} className={`choco-drip drip-${i}`} />)}
+          </div>
+        </div>
+        <p className="choco-loader-msg">{CHOCO_MESSAGES[msgIdx]}</p>
+        <div className="choco-dots"><span /><span /><span /></div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Checkout item image ── */
+function CheckoutItemImage({ imageUrl, name }) {
+  const [imgError, setImgError] = useState(false)
+  if (imageUrl && !imgError) {
+    return (
+      <div className="ci-img-wrap">
+        <img
+          src={imageUrl}
+          alt={name}
+          className="ci-img"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    )
+  }
+  return (
+    <div className="ci-img-wrap ci-img-fallback">
+      <ImageOff size={13} strokeWidth={1.8} />
+    </div>
+  )
+}
+
+/* ─── Main Page ── */
 export default function CheckoutPage() {
   const { cartId, cart, resetCart } = useCart()
   const navigate = useNavigate()
@@ -28,6 +96,7 @@ export default function CheckoutPage() {
   const [coords, setCoords] = useState(null)
   const [locLoading, setLocLoading] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [imageMap, setImageMap] = useState({})
 
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
@@ -36,20 +105,22 @@ export default function CheckoutPage() {
   const items = cart?.items || []
   const total = cart?.totalAmount || 0
 
-  // Init or update map when coords change
+  useEffect(() => {
+    productApi.getAll(0, 100).then(data => {
+      const map = {}
+      data.items.forEach(p => { map[p.id] = p.imageUrl })
+      setImageMap(map)
+    }).catch(() => {})
+  }, [])
+
   useEffect(() => {
     if (!coords || !mapRef.current) return
     if (!mapInstanceRef.current) {
-      const map = L.map(mapRef.current, {
-        zoomControl: true,
-        scrollWheelZoom: false,
-      }).setView([coords.lat, coords.lng], 16)
-
+      const map = L.map(mapRef.current, { zoomControl: true, scrollWheelZoom: false })
+        .setView([coords.lat, coords.lng], 16)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors', maxZoom: 19,
       }).addTo(map)
-
       mapInstanceRef.current = map
     } else {
       mapInstanceRef.current.setView([coords.lat, coords.lng], 16)
@@ -60,9 +131,8 @@ export default function CheckoutPage() {
     } else {
       markerRef.current = L.marker([coords.lat, coords.lng], { draggable: true })
         .addTo(mapInstanceRef.current)
-        .bindPopup('📍 Drag to adjust your delivery pin')
+        .bindPopup('Drag to adjust your delivery pin')
         .openPopup()
-
       markerRef.current.on('dragend', (e) => {
         const { lat, lng } = e.target.getLatLng()
         setCoords({ lat, lng })
@@ -72,58 +142,39 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
+      if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null }
     }
   }, [])
 
   const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error('Geolocation not supported on this device')
-      return
-    }
+    if (!navigator.geolocation) { toast.error('Geolocation not supported on this device'); return }
     setLocLoading(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setUseLocation(true)
-        setLocLoading(false)
+        setUseLocation(true); setLocLoading(false)
         toast.success('Location pinned! Drag the marker to adjust.')
       },
-      () => {
-        toast.error('Could not get location. Please allow location access.')
-        setLocLoading(false)
-      }
+      () => { toast.error('Could not get location. Please allow location access.'); setLocLoading(false) }
     )
   }
 
   const handleRemoveLocation = () => {
-    setUseLocation(false)
-    setCoords(null)
+    setUseLocation(false); setCoords(null)
     if (markerRef.current && mapInstanceRef.current) {
-      mapInstanceRef.current.removeLayer(markerRef.current)
-      markerRef.current = null
+      mapInstanceRef.current.removeLayer(markerRef.current); markerRef.current = null
     }
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove()
-      mapInstanceRef.current = null
-    }
+    if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null }
   }
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault()
-    if (!address.trim()) {
-      toast.error('Delivery address is required')
-      return
-    }
+    if (!address.trim()) { toast.error('Delivery address is required'); return }
     if (!cartId) return
     setLoading(true)
     try {
       const orderData = await orderApi.place(
-        cartId,
-        address.trim(),
+        cartId, address.trim(),
         useLocation && coords ? coords.lat : null,
         useLocation && coords ? coords.lng : null
       )
@@ -152,6 +203,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page">
+      {loading && <ChocolateLoader />}
       <Navbar />
       <div className="checkout-inner">
         <Link to="/cart" className="back-link">
@@ -163,14 +215,11 @@ export default function CheckoutPage() {
         <div className="checkout-layout">
           {/* ── FORM ── */}
           <form onSubmit={handlePlaceOrder} className="checkout-form">
-
-            {/* Delivery address section */}
             <div className="form-section">
               <div className="form-section-header">
                 <div className="form-section-icon"><MapPin size={17} /></div>
                 <h2 className="form-section-title">Delivery Details</h2>
               </div>
-
               <div className="field-group">
                 <label className="field-label">
                   <MapPin size={11} />
@@ -197,19 +246,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Location pin section */}
             <div className="form-section">
               <div className="location-section">
                 <div className="location-header">
-                  <div className="form-section-icon">
-                    <Navigation size={16} />
-                  </div>
+                  <div className="form-section-icon"><Navigation size={16} /></div>
                   <div className="location-header-text">
                     <strong>Pin Your Location</strong>
                     <span>Share your GPS location for precise delivery — highly recommended</span>
                   </div>
                 </div>
-
                 <div className="loc-row">
                   <button
                     type="button"
@@ -217,20 +262,15 @@ export default function CheckoutPage() {
                     onClick={handleGetLocation}
                     disabled={locLoading}
                   >
-                    {locLoading
-                      ? <span className="spinner spinner--sm" />
-                      : <Navigation size={15} />
-                    }
-                    {useLocation && coords ? '✓ Location Pinned' : 'Use My Location'}
+                    {locLoading ? <span className="spinner spinner--sm" /> : <Navigation size={15} />}
+                    {useLocation && coords ? 'Location Pinned' : 'Use My Location'}
                   </button>
-
                   {useLocation && coords && (
                     <button type="button" className="loc-clear" onClick={handleRemoveLocation}>
                       <X size={13} /> Remove
                     </button>
                   )}
                 </div>
-
                 {coords && (
                   <div className="map-wrapper">
                     <div className="map-label">
@@ -238,15 +278,12 @@ export default function CheckoutPage() {
                       Your delivery pin — drag to adjust exact location
                     </div>
                     <div ref={mapRef} className="map-container" />
-                    <div className="map-coords">
-                      {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-                    </div>
+                    <div className="map-coords">{coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Submit */}
             <div className="form-submit-row">
               <button type="submit" className="place-order-btn" disabled={loading}>
                 {loading ? <span className="spinner" /> : <ShoppingBag size={18} />}
@@ -268,6 +305,10 @@ export default function CheckoutPage() {
             <div className="checkout-items">
               {items.map(item => (
                 <div key={item.productId} className="checkout-item">
+                  <CheckoutItemImage
+                    imageUrl={imageMap[item.productId]}
+                    name={item.productName}
+                  />
                   <span className="ci-name">
                     {item.productName}
                     <span className="ci-qty"> ×{item.quantity}</span>

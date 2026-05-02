@@ -1,15 +1,50 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import { useCart } from '../../context/CartContext'
-import { Trash2, ArrowLeft, ShoppingBag, ChevronRight } from 'lucide-react'
-import { cartApi } from '../../services/api'
+import { Trash2, ArrowLeft, ShoppingBag, ChevronRight, ImageOff } from 'lucide-react'
+import { cartApi, productApi } from '../../services/api'
 import toast from 'react-hot-toast'
 import './CartPage.css'
 
+/* ─── Cart Item Image ── */
+function CartItemImage({ imageUrl, name }) {
+  const [imgError, setImgError] = useState(false)
+
+  if (imageUrl && !imgError) {
+    return (
+      <div className="cart-item-img-wrap">
+        <img
+          src={imageUrl}
+          alt={name}
+          className="cart-item-img"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="cart-item-img-wrap cart-item-img-fallback">
+      <ImageOff size={18} strokeWidth={1.6} />
+    </div>
+  )
+}
+
+/* ─── Main Page ── */
 export default function CartPage() {
   const { cartId, cart, fetchCart, resetCart } = useCart()
   const navigate = useNavigate()
+  const [imageMap, setImageMap] = useState({})
+
+  // Fetch all products once and build productId → imageUrl map
+  useEffect(() => {
+    productApi.getAll(0, 100).then(data => {
+      const map = {}
+      data.items.forEach(p => { map[p.id] = p.imageUrl })
+      setImageMap(map)
+    }).catch(() => {})
+  }, [])
 
   const handleClear = async () => {
     if (!cartId) return
@@ -80,7 +115,10 @@ export default function CartPage() {
                     className="cart-item"
                     style={{ animationDelay: `${i * 0.06}s` }}
                   >
-                    <span className="cart-item-emoji">🍫</span>
+                    <CartItemImage
+                      imageUrl={imageMap[item.productId]}
+                      name={item.productName}
+                    />
                     <div className="cart-item-info">
                       <h3>{item.productName}</h3>
                       <p className="cart-item-price">₹{Number(item.price).toFixed(2)} each</p>

@@ -1,78 +1,136 @@
 import React, { useState, useEffect } from 'react'
 import { adminApi } from '../../services/api'
-import { Search, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  FilePlus,
+  CheckCircle,
+  ChefHat,
+  Truck,
+  PackageCheck,
+  XCircle,
+  Calendar,
+  X,
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import './AdminOrdersPage.css'
+import DateTimePicker from '../../components/DateTimePicker'
 
 const STATUS_OPTIONS = ['CREATED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']
 
+const STATUS_ICONS = {
+  CREATED:          <FilePlus size={13} strokeWidth={2.2} />,
+  CONFIRMED:        <CheckCircle size={13} strokeWidth={2.2} />,
+  PREPARING:        <ChefHat size={13} strokeWidth={2.2} />,
+  OUT_FOR_DELIVERY: <Truck size={13} strokeWidth={2.2} />,
+  DELIVERED:        <PackageCheck size={13} strokeWidth={2.2} />,
+  CANCELLED:        <XCircle size={13} strokeWidth={2.2} />,
+}
+
 const STATUS_LABELS = {
-  CREATED: '🆕 Created',
-  CONFIRMED: '✅ Confirmed',
-  PREPARING: '👨‍🍳 Preparing',
-  OUT_FOR_DELIVERY: '🚚 Out for Delivery',
-  DELIVERED: '🎉 Delivered',
-  CANCELLED: '❌ Cancelled',
+  CREATED:          'Created',
+  CONFIRMED:        'Confirmed',
+  PREPARING:        'Preparing',
+  OUT_FOR_DELIVERY: 'Out for Delivery',
+  DELIVERED:        'Delivered',
+  CANCELLED:        'Cancelled',
 }
 
 const STATUS_CLASS = {
-  CREATED: 'status-created',
-  CONFIRMED: 'status-confirmed',
-  PREPARING: 'status-preparing',
+  CREATED:          'status-created',
+  CONFIRMED:        'status-confirmed',
+  PREPARING:        'status-preparing',
   OUT_FOR_DELIVERY: 'status-otd',
-  DELIVERED: 'status-delivered',
-  CANCELLED: 'status-cancelled',
+  DELIVERED:        'status-delivered',
+  CANCELLED:        'status-cancelled',
 }
+
+const StatusLabel = ({ status }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+    {STATUS_ICONS[status]}
+    {STATUS_LABELS[status] || status}
+  </span>
+)
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
   const [totalElements, setTotalElements] = useState(0)
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState(null)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
   const [updatingId, setUpdatingId] = useState(null)
 
   const PAGE_SIZE = 10
 
-  const fetchOrders = async (p = page, s = search) => {
+  const fetchOrders = async (
+    p = page,
+    s = search,
+    status = statusFilter,
+    from = fromDate,
+    to = toDate,
+  ) => {
     setLoading(true)
-
     try {
       const isUUID = /^[0-9a-fA-F\-]{4,}$/.test(s)
-
       const data = await adminApi.getOrders({
         orderIdLike: isUUID ? s : undefined,
-        name: !isUUID ? s : undefined,
-        page: p,
-        size: PAGE_SIZE
+        name:        !isUUID ? s : undefined,
+        status:      status || undefined,
+        fromDate:    from || undefined,
+        toDate:      to   || undefined,
+        page:        p,
+        size:        PAGE_SIZE,
       })
-
       setOrders(data.content || [])
       setTotalElements(data.totalElements || 0)
-
     } catch (err) {
-      console.error(err)   // 👈 add this (important)
+      console.error(err)
       toast.error(err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchOrders(page, search) }, [page])
+  useEffect(() => { fetchOrders(page, search, statusFilter, fromDate, toDate) }, [page])
 
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(0)
-    fetchOrders(0, search)
+    fetchOrders(0, search, statusFilter, fromDate, toDate)
   }
+
+  const handleStatusFilter = (status) => {
+    const next = status === statusFilter ? null : status
+    setStatusFilter(next)
+    setPage(0)
+    fetchOrders(0, search, next, fromDate, toDate)
+  }
+
+  const handleDateApply = () => {
+    setPage(0)
+    fetchOrders(0, search, statusFilter, fromDate, toDate)
+  }
+
+  const handleDateClear = () => {
+    setFromDate('')
+    setToDate('')
+    setPage(0)
+    fetchOrders(0, search, statusFilter, '', '')
+  }
+
+  const hasDateFilter = fromDate || toDate
 
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingId(orderId)
     try {
       await adminApi.updateOrderStatus(orderId, newStatus)
       toast.success('Status updated!')
-      fetchOrders(page, search)
+      fetchOrders(page, search, statusFilter, fromDate, toDate)
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -87,7 +145,7 @@ export default function AdminOrdersPage() {
     if (!dateStr) return '—'
     return new Date(dateStr).toLocaleString('en-IN', {
       day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit',
     })
   }
 
@@ -98,6 +156,7 @@ export default function AdminOrdersPage() {
         <span className="ao-count">{totalElements} total</span>
       </div>
 
+      {/* ── Search ── */}
       <form className="search-bar" onSubmit={handleSearch}>
         <Search size={16} />
         <input
@@ -108,6 +167,61 @@ export default function AdminOrdersPage() {
         <button type="submit">Search</button>
       </form>
 
+      {/* ── Date Range Filter ── */}
+      <div className="ao-date-filter">
+        <div className="date-filter-inner">
+          <Calendar size={15} className="date-filter-icon" />
+          <DateTimePicker
+            placeholder="Start date & time"
+            value={fromDate}
+            onChange={(iso) => setFromDate(iso)}
+          />
+          <span className="date-filter-sep">→</span>
+          <DateTimePicker
+            placeholder="End date & time"
+            value={toDate}
+            onChange={(iso) => setToDate(iso)}
+          />
+          <button
+            type="button"
+            className="date-apply-btn"
+            onClick={handleDateApply}
+          >
+            Apply
+          </button>
+          {hasDateFilter && (
+            <button
+              type="button"
+              className="date-clear-btn"
+              onClick={handleDateClear}
+              title="Clear date filter"
+            >
+              <X size={13} /> Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Status Filter Pills ── */}
+      <div className="ao-filter-pills">
+        <button
+          className={`filter-pill ${statusFilter === null ? 'filter-pill--active' : ''}`}
+          onClick={() => handleStatusFilter(null)}
+        >
+          All
+        </button>
+        {STATUS_OPTIONS.map(s => (
+          <button
+            key={s}
+            className={`filter-pill filter-pill--${s.toLowerCase().replace(/_/g, '-')} ${statusFilter === s ? 'filter-pill--active' : ''}`}
+            onClick={() => handleStatusFilter(s)}
+          >
+            <StatusLabel status={s} />
+          </button>
+        ))}
+      </div>
+
+      {/* ── List ── */}
       {loading ? (
         <div className="ao-list">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -137,7 +251,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="or-right">
                   <span className={`status-badge ${STATUS_CLASS[order.status]}`}>
-                    {STATUS_LABELS[order.status] || order.status}
+                    <StatusLabel status={order.status} />
                   </span>
                   <span className="or-amount">₹{Number(order.totalAmount).toFixed(2)}</span>
                   <span className="or-date">{formatDate(order.createdAt)}</span>
@@ -147,7 +261,6 @@ export default function AdminOrdersPage() {
 
               {expandedId === order.orderId && (
                 <div className="order-detail">
-                  
                   <div className="od-items">
                     <h4>Items</h4>
                     {order.items?.length > 0
@@ -176,7 +289,7 @@ export default function AdminOrdersPage() {
                             >
                               {updatingId === order.orderId
                                 ? <span className="spinner dark" />
-                                : STATUS_LABELS[s]
+                                : <StatusLabel status={s} />
                               }
                             </button>
                           ))}
@@ -188,14 +301,12 @@ export default function AdminOrdersPage() {
                     </p>
                   )}
 
-                  {/* ✅ ADD HERE (always visible regardless of status) */}
                   <div className="od-sms-status">
                     <h4>SMS</h4>
                     <span className={`status-badge sms-${(order.smsStatus || 'UNKNOWN').toLowerCase()}`}>
                       {order.smsStatus || 'N/A'}
                     </span>
                   </div>
-
                 </div>
               )}
             </div>

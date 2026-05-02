@@ -1,8 +1,9 @@
 import React from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Package, ShoppingBag, LogOut, Cookie, MessageSquare } from 'lucide-react'  // 👈 added MessageSquare
+import { Package, ShoppingBag, LogOut, Cookie, MessageSquare, MapPin } from 'lucide-react'
 import './AdminDashboard.css'
+
 
 export default function AdminDashboard() {
   const { logout } = useAuth()
@@ -36,7 +37,16 @@ export default function AdminDashboard() {
             <ShoppingBag size={17} />
             Orders
           </NavLink>
-          <NavLink                                        // 👈 added
+          
+          <NavLink
+            to="/admin/zones"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <MapPin size={17} />
+            Zones
+          </NavLink>
+          
+          <NavLink                                      
             to="/admin/sms-logs"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           >

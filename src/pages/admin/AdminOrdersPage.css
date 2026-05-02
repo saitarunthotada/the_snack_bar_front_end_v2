@@ -1,6 +1,6 @@
 /* ─── Page ───────────────────────────────────────────── */
 .admin-orders {
-  max-width: 1100px;
+  width: 100%;
   animation: pageIn 0.35s ease both;
 }
 
@@ -208,8 +208,7 @@
   font-style: italic;
 }
 
-/* ─── SMS Status  ──────────────────────────────────── */
-
+/* ─── SMS Status ─────────────────────────────────────── */
 .od-sms-status { min-width: 120px; }
 .od-sms-status h4 {
   font-family: 'DM Sans', sans-serif;
@@ -269,7 +268,6 @@
   font-style: italic;
   align-self: center;
 }
-
 
 /* ─── Skeleton ───────────────────────────────────────── */
 .skeleton-row {
@@ -337,3 +335,165 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Status Filter Pills ────────────────────────────── */
+.ao-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid rgba(180, 130, 90, 0.2);
+  background: #fff;
+  color: #a08060;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: #f5ece0;
+  color: #6a3a18;
+  border-color: rgba(180, 100, 40, 0.3);
+}
+
+/* Active states — one per status */
+.filter-pill--active                              { color: #fff !important; border-color: transparent !important; }
+.filter-pill--created.filter-pill--active         { background: #b07a0a; }
+.filter-pill--confirmed.filter-pill--active       { background: #1a4e7a; }
+.filter-pill--preparing.filter-pill--active       { background: #b85c15; }
+.filter-pill--out-for-delivery.filter-pill--active{ background: #1a5fa0; }
+.filter-pill--delivered.filter-pill--active       { background: #1a7a40; }
+.filter-pill--cancelled.filter-pill--active       { background: #b83028; }
+
+/* "All" pill active */
+.filter-pill:first-child.filter-pill--active {
+  background: #2c1810;
+  border-color: transparent;
+  color: #f5e6c8 !important;
+}
+
+/* ─── Date Range Filter ──────────────────────────────── */
+.ao-date-filter {
+  margin-bottom: 16px;
+}
+
+.date-filter-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid rgba(200, 160, 120, 0.2);
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.date-filter-icon {
+  color: #a07850;
+  flex-shrink: 0;
+}
+
+.date-filter-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #c0a080;
+  white-space: nowrap;
+}
+
+.date-input {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c1810;
+  background: #fdf8f2;
+  border: 1.5px solid rgba(200, 160, 120, 0.25);
+  border-radius: 9px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  cursor: pointer;
+}
+
+.date-input:focus {
+  border-color: #b07a40;
+  box-shadow: 0 0 0 3px rgba(176, 122, 64, 0.12);
+}
+
+/* Style the native calendar icon to match the theme */
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+  filter: sepia(0.6);
+}
+
+.date-filter-sep {
+  font-size: 14px;
+  color: #c0a080;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.date-apply-btn {
+  padding: 7px 20px;
+  background: #2c1810;
+  color: #f5e6c8;
+  border: none;
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.date-apply-btn:hover {
+  background: #3d2010;
+  transform: translateY(-1px);
+}
+
+.date-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: rgba(184, 48, 40, 0.07);
+  color: #b83028;
+  border: 1px solid rgba(184, 48, 40, 0.2);
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.date-clear-btn:hover {
+  background: rgba(184, 48, 40, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Responsive: stack date inputs on small screens */
+@media (max-width: 640px) {
+  .date-filter-inner {
+    gap: 8px;
+  }
+  .date-input {
+    width: 100%;
+    min-width: 0;
+  }
+}

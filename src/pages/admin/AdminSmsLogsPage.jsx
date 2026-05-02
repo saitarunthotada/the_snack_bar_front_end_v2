@@ -35,8 +35,8 @@ export default function AdminSmsLogsPage() {
         size: PAGE_SIZE,
       })
       // backend returns Page<AdminSmsLogResponse> directly under data.data
-      setLogs(data.content || [])
-      setTotalElements(data.totalElements || 0)
+    setLogs(data.items || [])
+    setTotalElements(data.total || 0)
     } catch (err) {
       console.error(err)
       toast.error(err.message)

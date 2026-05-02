@@ -208,6 +208,23 @@
   font-style: italic;
 }
 
+/* ─── SMS Status  ──────────────────────────────────── */
+
+.od-sms-status { min-width: 120px; }
+.od-sms-status h4 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  color: #c0a080;
+  margin-bottom: 14px;
+}
+.sms-sent     { background: #eafaf1; color: #1a7a40; border: 1px solid rgba(26,122,64,0.2); }
+.sms-failed   { background: #fff0ee; color: #b83028; border: 1px solid rgba(184,48,40,0.2); }
+.sms-pending  { background: #fef9ec; color: #b07a0a; border: 1px solid rgba(200,160,10,0.2); }
+.sms-unknown  { background: #f5f5f5; color: #888;    border: 1px solid rgba(0,0,0,0.1); }
+
 /* ─── Status Change ──────────────────────────────────── */
 .od-status-change {
   min-width: 270px;
@@ -252,6 +269,7 @@
   font-style: italic;
   align-self: center;
 }
+
 
 /* ─── Skeleton ───────────────────────────────────────── */
 .skeleton-row {

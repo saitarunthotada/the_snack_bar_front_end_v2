@@ -208,4 +208,32 @@ export const adminApi = {
     const res = await api.patch(`${ADMIN_PREFIX}/orders/${orderId}`, { status })
     return res.data
   },
+
+  /**
+   * GET /api/admin/orders/{orderId}
+   * → { success, data: AdminOrderResponse }
+   */
+  getOrderById: async (orderId) => {
+    const res = await api.get(`${ADMIN_PREFIX}/orders/${orderId}`)
+    return res.data.data
+  },
+
+  /**
+   * GET /api/admin/sms-logs?orderId=&page=0&size=10
+   * → { success, data: Page<AdminSmsLogResponse> }
+   * Spring Page: { content: AdminSmsLogResponse[], totalElements, number, size }
+   * AdminSmsLogResponse: { id, orderId, phone, message, status, createdAt }
+   */
+  getSmsLogs: async ({ orderId, page = 0, size = 10 } = {}) => {
+    const res = await api.get(`${ADMIN_PREFIX}/sms-logs`, {
+      params: {
+        orderId: orderId || undefined,
+        page,
+        size,
+      },
+    })
+    return res.data.data // Spring Page — use .content and .totalElements
+  },
 }
+
+

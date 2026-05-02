@@ -147,6 +147,7 @@ export default function AdminOrdersPage() {
 
               {expandedId === order.orderId && (
                 <div className="order-detail">
+                  
                   <div className="od-items">
                     <h4>Items</h4>
                     {order.items?.length > 0
@@ -164,24 +165,37 @@ export default function AdminOrdersPage() {
                     <div className="od-status-change">
                       <h4>Update Status</h4>
                       <div className="status-buttons">
-                        {STATUS_OPTIONS.filter(s => s !== order.status).map(s => (
-                          <button
-                            key={s}
-                            className={`status-btn ${STATUS_CLASS[s]}`}
-                            onClick={() => handleStatusChange(order.orderId, s)}
-                            disabled={updatingId === order.orderId}
-                          >
-                            {updatingId === order.orderId
-                              ? <span className="spinner dark" />
-                              : STATUS_LABELS[s]
-                            }
-                          </button>
-                        ))}
+                        {STATUS_OPTIONS
+                          .filter(s => s !== order.status)
+                          .map(s => (
+                            <button
+                              key={s}
+                              className={`status-btn ${STATUS_CLASS[s]}`}
+                              onClick={() => handleStatusChange(order.orderId, s)}
+                              disabled={updatingId === order.orderId}
+                            >
+                              {updatingId === order.orderId
+                                ? <span className="spinner dark" />
+                                : STATUS_LABELS[s]
+                              }
+                            </button>
+                          ))}
                       </div>
                     </div>
                   ) : (
-                    <p className="od-final">This order is in a final state and cannot be changed.</p>
+                    <p className="od-final">
+                      This order is in a final state and cannot be changed.
+                    </p>
                   )}
+
+                  {/* ✅ ADD HERE (always visible regardless of status) */}
+                  <div className="od-sms-status">
+                    <h4>SMS</h4>
+                    <span className={`status-badge sms-${(order.smsStatus || 'UNKNOWN').toLowerCase()}`}>
+                      {order.smsStatus || 'N/A'}
+                    </span>
+                  </div>
+
                 </div>
               )}
             </div>

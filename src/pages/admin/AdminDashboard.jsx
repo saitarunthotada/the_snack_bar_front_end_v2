@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Package, ShoppingBag, LogOut, Cookie } from 'lucide-react'
+import { Package, ShoppingBag, LogOut, Cookie, MessageSquare } from 'lucide-react'  // 👈 added MessageSquare
 import './AdminDashboard.css'
 
 export default function AdminDashboard() {
@@ -35,6 +35,13 @@ export default function AdminDashboard() {
           >
             <ShoppingBag size={17} />
             Orders
+          </NavLink>
+          <NavLink                                        // 👈 added
+            to="/admin/sms-logs"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <MessageSquare size={17} />
+            SMS Logs
           </NavLink>
         </nav>
 

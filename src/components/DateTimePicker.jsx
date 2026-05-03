@@ -20,12 +20,11 @@ function pad(n) {
   return String(n).padStart(2, '0')
 }
 
-/** value: "YYYY-MM-DDTHH:MM:SS" or "" */
 export default function DateTimePicker({ value, onChange, placeholder = 'Select date & time', label }) {
   const parsed = value ? new Date(value) : null
 
   const [open, setOpen] = useState(false)
-  const [view, setView] = useState('calendar') // 'calendar' | 'time'
+  const [view, setView] = useState('calendar')
   const [viewYear, setViewYear] = useState((parsed || new Date()).getFullYear())
   const [viewMonth, setViewMonth] = useState((parsed || new Date()).getMonth())
 
@@ -40,6 +39,16 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
   const ref = useRef()
   const hourRef = useRef()
   const minRef  = useRef()
+
+  // ── Sync internal state when value is cleared externally ──
+  useEffect(() => {
+    if (!value) {
+      setSelDate(null)
+      setSelHour(0)
+      setSelMin(0)
+      setView('calendar')
+    }
+  }, [value])
 
   // close on outside click
   useEffect(() => {
@@ -123,7 +132,6 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
   const cells        = Array.from({ length: firstDay + daysInMonth }, (_, i) =>
     i < firstDay ? null : i - firstDay + 1
   )
-  // pad to full weeks
   while (cells.length % 7 !== 0) cells.push(null)
 
   const today = new Date()
@@ -176,7 +184,6 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
 
           {view === 'calendar' && (
             <div className="dtp-calendar">
-              {/* Month nav */}
               <div className="dtp-month-nav">
                 <button onClick={prevMonth} type="button" className="dtp-nav-btn">
                   <ChevronLeft size={14} />
@@ -189,12 +196,10 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
                 </button>
               </div>
 
-              {/* Day headers */}
               <div className="dtp-day-headers">
                 {DAYS.map(d => <span key={d}>{d}</span>)}
               </div>
 
-              {/* Day grid */}
               <div className="dtp-day-grid">
                 {cells.map((d, i) => (
                   <button
@@ -229,7 +234,6 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
             <div className="dtp-time">
               <p className="dtp-time-title">Pick a time</p>
               <div className="dtp-time-columns">
-                {/* Hours */}
                 <div className="dtp-time-col">
                   <span className="dtp-time-col-label">HH</span>
                   <div className="dtp-scroll-list" ref={hourRef}>
@@ -248,7 +252,6 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
 
                 <span className="dtp-time-colon">:</span>
 
-                {/* Minutes */}
                 <div className="dtp-time-col">
                   <span className="dtp-time-col-label">MM</span>
                   <div className="dtp-scroll-list" ref={minRef}>

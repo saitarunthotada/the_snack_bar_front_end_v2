@@ -2,7 +2,26 @@
    PRODUCT CARD — Premium luxury tile
 ══════════════════════════════════════════ */
 
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.products-section, body, #root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .product-card {
+  min-width: 0;
+  width: 100%;
   background: var(--surface-raised);
   border-radius: var(--r-lg);
   overflow: hidden;
@@ -80,7 +99,7 @@
 
 /* ── Info ─────────────────────────── */
 .product-info {
-  padding: 16px 18px 18px;
+  padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -89,7 +108,7 @@
 
 .product-name {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--choco-900);
   line-height: 1.25;
@@ -97,7 +116,7 @@
 }
 
 .product-desc {
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-muted);
   line-height: 1.55;
   display: -webkit-box;
@@ -110,28 +129,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
 
 .product-price {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--choco-800);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 /* ── Add button ─────────────────────────── */
 .add-btn {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
+  gap: 5px;
+  padding: 7px 12px;
   background: var(--choco-900);
   color: var(--cream);
   border-radius: var(--r-full);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
   transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
@@ -160,8 +180,8 @@
 }
 
 .qty-btn {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -180,10 +200,10 @@
 .qty-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .qty-count {
-  min-width: 28px;
+  min-width: 22px;
   text-align: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--choco-900);
   display: flex;
   align-items: center;

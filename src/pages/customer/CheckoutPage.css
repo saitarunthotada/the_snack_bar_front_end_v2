@@ -68,16 +68,17 @@
 }
 .form-section:last-of-type { border-bottom: none; }
 
+/* ── Section header ─────────────────────────── */
 .form-section-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 22px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .form-section-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   background: linear-gradient(135deg, var(--choco-100), var(--gold-pale, #f7edce));
   border-radius: 50%;
   display: flex;
@@ -88,12 +89,27 @@
   flex-shrink: 0;
 }
 
+/* Title + subtitle stacked next to the icon */
+.form-section-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .form-section-title {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--choco-900);
   letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.form-section-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 /* ── Field ─────────────────────────── */
@@ -135,6 +151,45 @@
   border-radius: var(--r-full);
   padding: 2px 8px;
   margin-left: auto;
+}
+
+/* GPS auto-fill badge — appears in label row next to Required */
+.autofill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #15803d;
+  background: rgba(22,163,74,0.1);
+  border: 1px solid rgba(22,163,74,0.25);
+  border-radius: var(--r-full);
+  padding: 2px 8px;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Textarea while geocoding is running */
+.field-textarea--loading {
+  background: var(--choco-50);
+  color: var(--text-muted);
+  cursor: wait;
+  border-color: rgba(201,168,76,0.4);
+}
+
+/* Spinner inside the textarea wrapper (top-right corner) */
+.field-geocoding-spinner {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
 }
 
 .field-input-wrap {
@@ -195,32 +250,14 @@
   line-height: 1.5;
 }
 
-/* ── Location row ─────────────────────────── */
+/* ── Location section ─────────────────────────── */
+/* The header is now in form-section-header; this box is just the
+   interactive content (button + map) */
 .location-section {
   background: linear-gradient(135deg, var(--choco-50), var(--gold-pale, #f7edce));
   border: 1.5px dashed rgba(201,168,76,0.4);
   border-radius: var(--r-lg);
-  padding: 18px 20px;
-}
-
-.location-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.location-header-text { flex: 1; }
-.location-header-text strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--choco-800);
-  margin-bottom: 2px;
-}
-.location-header-text span {
-  font-size: 12px;
-  color: var(--text-muted);
+  padding: 16px 18px;
 }
 
 .loc-btn {
@@ -269,6 +306,7 @@
   border: 1px solid rgba(185,28,28,0.2);
   border-radius: var(--r-full);
   transition: all var(--t-fast);
+  cursor: pointer;
 }
 .loc-clear:hover {
   background: rgba(185,28,28,0.12);
@@ -277,7 +315,7 @@
 
 /* ── Map ─────────────────────────── */
 .map-wrapper {
-  margin-top: 16px;
+  margin-top: 14px;
   border-radius: var(--r-md);
   overflow: hidden;
   border: 1.5px solid rgba(201,168,76,0.25);
@@ -403,7 +441,7 @@
   overflow-y: auto;
 }
 
-/* ── Checkout summary item with product image ── */
+/* ── Checkout item ── */
 .checkout-item {
   display: flex;
   align-items: center;
@@ -414,11 +452,8 @@
   border: 1px solid var(--choco-100);
   transition: border-color var(--t-fast);
 }
-.checkout-item:hover {
-  border-color: rgba(201,168,76,0.2);
-}
+.checkout-item:hover { border-color: rgba(201,168,76,0.2); }
 
-/* Product image thumbnail in summary */
 .ci-img-wrap {
   width: 42px;
   height: 42px;
@@ -437,11 +472,8 @@
   display: block;
   transition: transform 0.3s ease;
 }
-.checkout-item:hover .ci-img {
-  transform: scale(1.07);
-}
+.checkout-item:hover .ci-img { transform: scale(1.07); }
 
-/* Fallback icon container */
 .ci-img-fallback {
   width: 100%;
   height: 100%;
@@ -525,10 +557,9 @@
 }
 .summary-security svg { color: var(--success); flex-shrink: 0; }
 
-/* ═══════════════════════════════════════════════════════════════
-   CHOCOLATE LOADER OVERLAY
-   ═══════════════════════════════════════════════════════════════ */
-
+/* ══════════════════════════════════════════
+   CHOCOLATE LOADER
+══════════════════════════════════════════ */
 .choco-loader-overlay {
   position: fixed;
   inset: 0;
@@ -569,15 +600,11 @@
   to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-.choco-bar-wrap {
-  position: relative;
-  width: 120px;
-}
+.choco-bar-wrap { position: relative; width: 120px; }
 
 .choco-bar-svg {
-  width: 120px;
-  height: 80px;
-  filter: drop-shadow(0 8px 18px rgba(80, 20, 0, 0.6));
+  width: 120px; height: 80px;
+  filter: drop-shadow(0 8px 18px rgba(80,20,0,0.6));
   animation: chocoRock 2.8s ease-in-out infinite;
 }
 
@@ -586,23 +613,13 @@
   50%       { transform: rotate(2deg) translateY(-3px); }
 }
 
-.choco-segment {
-  animation: segGlow 2.4s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.seg-0  { animation-delay: 0.0s; }
-.seg-1  { animation-delay: 0.2s; }
-.seg-2  { animation-delay: 0.4s; }
-.seg-3  { animation-delay: 0.6s; }
-.seg-4  { animation-delay: 0.8s; }
-.seg-5  { animation-delay: 1.0s; }
-.seg-6  { animation-delay: 1.2s; }
-.seg-7  { animation-delay: 1.4s; }
-.seg-8  { animation-delay: 1.6s; }
-.seg-9  { animation-delay: 1.8s; }
-.seg-10 { animation-delay: 2.0s; }
-.seg-11 { animation-delay: 2.2s; }
+.choco-segment { animation: segGlow 2.4s ease-in-out infinite; transform-origin: center; }
+.seg-0  { animation-delay: 0.0s; } .seg-1  { animation-delay: 0.2s; }
+.seg-2  { animation-delay: 0.4s; } .seg-3  { animation-delay: 0.6s; }
+.seg-4  { animation-delay: 0.8s; } .seg-5  { animation-delay: 1.0s; }
+.seg-6  { animation-delay: 1.2s; } .seg-7  { animation-delay: 1.4s; }
+.seg-8  { animation-delay: 1.6s; } .seg-9  { animation-delay: 1.8s; }
+.seg-10 { animation-delay: 2.0s; } .seg-11 { animation-delay: 2.2s; }
 
 @keyframes segGlow {
   0%, 70%, 100% { fill: #5c2a00; }
@@ -610,16 +627,10 @@
 }
 
 .choco-drips {
-  position: absolute;
-  top: 72px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  padding: 0 14px;
+  position: absolute; top: 72px; left: 0; right: 0;
+  display: flex; justify-content: space-around; padding: 0 14px;
   pointer-events: none;
 }
-
 .choco-drip {
   width: 7px;
   background: linear-gradient(180deg, #7a3010, #3d1800);
@@ -627,7 +638,6 @@
   animation: dripFall 2s ease-in infinite;
   transform-origin: top center;
 }
-
 .drip-0 { height: 0; animation-delay: 0.1s; }
 .drip-1 { height: 0; animation-delay: 0.7s; }
 .drip-2 { height: 0; animation-delay: 1.3s; }
@@ -642,14 +652,9 @@
 
 .choco-loader-msg {
   font-family: 'DM Sans', sans-serif;
-  font-size: 14.5px;
-  font-weight: 500;
-  color: #e8c090;
-  text-align: center;
-  letter-spacing: 0.01em;
-  min-height: 22px;
-  animation: msgFade 0.5s ease both;
-  line-height: 1.4;
+  font-size: 14.5px; font-weight: 500; color: #e8c090;
+  text-align: center; letter-spacing: 0.01em; min-height: 22px;
+  animation: msgFade 0.5s ease both; line-height: 1.4;
 }
 
 @keyframes msgFade {
@@ -657,19 +662,11 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.choco-dots {
-  display: flex;
-  gap: 7px;
-}
-
+.choco-dots { display: flex; gap: 7px; }
 .choco-dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #c4621a;
+  width: 7px; height: 7px; border-radius: 50%; background: #c4621a;
   animation: dotBounce 1.1s ease-in-out infinite;
 }
-
 .choco-dots span:nth-child(1) { animation-delay: 0s;    background: #c4621a; }
 .choco-dots span:nth-child(2) { animation-delay: 0.18s; background: #a04a10; }
 .choco-dots span:nth-child(3) { animation-delay: 0.36s; background: #7a3008; }
@@ -679,39 +676,27 @@
   40%           { transform: translateY(-8px); opacity: 1;   }
 }
 
-/* ── Empty / error states ─────────────────────────── */
+/* ── Empty state ─────────────────────────── */
 .checkout-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  text-align: center;
-  gap: 12px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 60vh; text-align: center; gap: 12px;
 }
-
 .checkout-empty h2 {
-  font-family: var(--font-display);
-  font-size: 28px;
-  color: var(--choco-800);
+  font-family: var(--font-display); font-size: 28px; color: var(--choco-800);
 }
 .checkout-empty p { font-size: 14px; color: var(--text-muted); }
 
 /* ── Responsive ─────────────────────────── */
 @media (max-width: 860px) {
-  .checkout-layout {
-    grid-template-columns: 1fr;
-  }
-  .checkout-summary {
-    position: static;
-    order: -1;
-  }
+  .checkout-layout { grid-template-columns: 1fr; }
+  .checkout-summary { position: static; order: -1; }
 }
 
 @media (max-width: 600px) {
-  .checkout-inner { padding: 24px 16px 60px; }
-  .form-section { padding: 20px 18px; }
-  .form-submit-row { padding: 18px; }
+  .checkout-inner    { padding: 24px 16px 60px; }
+  .form-section      { padding: 20px 18px; }
+  .form-submit-row   { padding: 18px; }
   .checkout-page-title { font-size: 26px; }
-  .ci-img-wrap { width: 36px; height: 36px; }
+  .ci-img-wrap       { width: 36px; height: 36px; }
+  .map-container     { height: 200px; }
 }

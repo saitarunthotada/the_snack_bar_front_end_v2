@@ -19,7 +19,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-/* ─── Chocolate Loading Overlay ── */
+/* ─── Constants ── */
 const CHOCO_MESSAGES = [
   'Melting the finest dark chocolate…',
   'Wrapping your treats with care…',
@@ -28,6 +28,36 @@ const CHOCO_MESSAGES = [
   'Getting the delivery bike ready…',
 ]
 
+const MAX_LOC_RETRIES = 5
+const RETRY_DELAY_MS  = 1500
+
+/* ─── Reverse geocode via Nominatim (free, no API key) ── */
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'ChocodewTreats/1.0' } }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const a = data.address || {}
+
+    // Build a concise, human-readable line preferring local Vizag fields
+    const parts = [
+      a.road || a.pedestrian || a.footway || a.path,
+      a.neighbourhood || a.suburb || a.quarter || a.village || a.hamlet,
+      a.city_district || a.county,
+      a.city || a.town,
+      a.postcode,
+    ].filter(Boolean)
+
+    return parts.length ? parts.join(', ') : (data.display_name || null)
+  } catch {
+    return null
+  }
+}
+
+/* ─── Chocolate Loading Overlay ── */
 function ChocolateLoader() {
   const [msgIdx, setMsgIdx] = useState(0)
   useEffect(() => {
@@ -71,12 +101,7 @@ function CheckoutItemImage({ imageUrl, name }) {
   if (imageUrl && !imgError) {
     return (
       <div className="ci-img-wrap">
-        <img
-          src={imageUrl}
-          alt={name}
-          className="ci-img"
-          onError={() => setImgError(true)}
-        />
+        <img src={imageUrl} alt={name} className="ci-img" onError={() => setImgError(true)} />
       </div>
     )
   }
@@ -91,20 +116,27 @@ function CheckoutItemImage({ imageUrl, name }) {
 export default function CheckoutPage() {
   const { cartId, cart, resetCart } = useCart()
   const navigate = useNavigate()
-  const [address, setAddress] = useState('')
+  const [address, setAddress]         = useState('')
   const [useLocation, setUseLocation] = useState(false)
-  const [coords, setCoords] = useState(null)
-  const [locLoading, setLocLoading] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [imageMap, setImageMap] = useState({})
+  const [coords, setCoords]           = useState(null)
+  const [locLoading, setLocLoading]   = useState(false)
+  const [locRetry, setLocRetry]       = useState(0)
+  const [geocoding, setGeocoding]     = useState(false)   // reverse geocode in progress
+  const [autoFilled, setAutoFilled]   = useState(false)   // was address auto-filled?
+  const [loading, setLoading]         = useState(false)
+  const [imageMap, setImageMap]       = useState({})
 
-  const mapRef = useRef(null)
+  const mapRef         = useRef(null)
   const mapInstanceRef = useRef(null)
-  const markerRef = useRef(null)
+  const markerRef      = useRef(null)
+  const retryTimerRef  = useRef(null)
+  const attemptRef     = useRef(0)
+  const abortedRef     = useRef(false)
 
   const items = cart?.items || []
   const total = cart?.totalAmount || 0
 
+  /* ── Fetch product images ── */
   useEffect(() => {
     productApi.getAll(0, 100).then(data => {
       const map = {}
@@ -113,6 +145,108 @@ export default function CheckoutPage() {
     }).catch(() => {})
   }, [])
 
+  /* ── Auto-request location on mount ── */
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    attemptRef.current = 0
+    abortedRef.current = false
+    requestLocation()
+    return () => {
+      abortedRef.current = true
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /* ── Core geolocation logic with retry ── */
+  const requestLocation = (isManual = false) => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation not supported on this device')
+      return
+    }
+    setLocLoading(true)
+    if (isManual) {
+      attemptRef.current = 0
+      abortedRef.current = false
+      setLocRetry(0)
+    }
+
+    const attempt = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (abortedRef.current) return
+          const lat = pos.coords.latitude
+          const lng = pos.coords.longitude
+          setCoords({ lat, lng })
+          setUseLocation(true)
+          setLocLoading(false)
+          setLocRetry(0)
+          if (isManual || attemptRef.current > 0) {
+            toast.success('Location pinned! Drag the marker to adjust.')
+          }
+          // Auto-fill address from pinned coordinates
+          fillAddressFromCoords(lat, lng)
+        },
+        (err) => {
+          if (abortedRef.current) return
+          if (err.code === 1) {
+            abortedRef.current = true
+            setLocLoading(false)
+            setLocRetry(0)
+            if (isManual) toast.error('Location access denied. Please allow it in browser settings.')
+            return
+          }
+          const next = attemptRef.current + 1
+          if (next < MAX_LOC_RETRIES) {
+            attemptRef.current = next
+            setLocRetry(next)
+            retryTimerRef.current = setTimeout(attempt, RETRY_DELAY_MS)
+          } else {
+            setLocLoading(false)
+            setLocRetry(0)
+            if (isManual) toast.error('Could not get location after several tries. Enter address manually.')
+          }
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      )
+    }
+
+    attempt()
+  }
+
+  const handleGetLocation = () => requestLocation(true)
+
+  /* ── Reverse geocode and populate address field ── */
+  const fillAddressFromCoords = async (lat, lng) => {
+    setGeocoding(true)
+    const result = await reverseGeocode(lat, lng)
+    setGeocoding(false)
+    if (result) {
+      setAddress(result)
+      setAutoFilled(true)
+      toast.success('Address auto-filled — edit if needed', { icon: '📍' })
+    }
+  }
+
+  const handleRemoveLocation = () => {
+    abortedRef.current = true
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+    setUseLocation(false)
+    setCoords(null)
+    setLocLoading(false)
+    setLocRetry(0)
+    setAutoFilled(false)
+    if (markerRef.current && mapInstanceRef.current) {
+      mapInstanceRef.current.removeLayer(markerRef.current)
+      markerRef.current = null
+    }
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove()
+      mapInstanceRef.current = null
+    }
+  }
+
+  /* ── Map ── */
   useEffect(() => {
     if (!coords || !mapRef.current) return
     if (!mapInstanceRef.current) {
@@ -122,6 +256,7 @@ export default function CheckoutPage() {
         attribution: '© OpenStreetMap contributors', maxZoom: 19,
       }).addTo(map)
       mapInstanceRef.current = map
+      setTimeout(() => map.invalidateSize(), 50)
     } else {
       mapInstanceRef.current.setView([coords.lat, coords.lng], 16)
     }
@@ -136,6 +271,7 @@ export default function CheckoutPage() {
       markerRef.current.on('dragend', (e) => {
         const { lat, lng } = e.target.getLatLng()
         setCoords({ lat, lng })
+        fillAddressFromCoords(lat, lng)
       })
     }
   }, [coords])
@@ -146,27 +282,7 @@ export default function CheckoutPage() {
     }
   }, [])
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) { toast.error('Geolocation not supported on this device'); return }
-    setLocLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setUseLocation(true); setLocLoading(false)
-        toast.success('Location pinned! Drag the marker to adjust.')
-      },
-      () => { toast.error('Could not get location. Please allow location access.'); setLocLoading(false) }
-    )
-  }
-
-  const handleRemoveLocation = () => {
-    setUseLocation(false); setCoords(null)
-    if (markerRef.current && mapInstanceRef.current) {
-      mapInstanceRef.current.removeLayer(markerRef.current); markerRef.current = null
-    }
-    if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null }
-  }
-
+  /* ── Place order ── */
   const handlePlaceOrder = async (e) => {
     e.preventDefault()
     if (!address.trim()) { toast.error('Delivery address is required'); return }
@@ -187,6 +303,7 @@ export default function CheckoutPage() {
     }
   }
 
+  /* ── Empty cart guard ── */
   if (!cartId || items.length === 0) {
     return (
       <div className="checkout-page">
@@ -200,6 +317,10 @@ export default function CheckoutPage() {
       </div>
     )
   }
+
+  const locBtnLabel = locLoading
+    ? locRetry > 0 ? `Retrying… (${locRetry}/${MAX_LOC_RETRIES})` : 'Detecting location…'
+    : useLocation && coords ? 'Location Pinned' : 'Use My Location'
 
   return (
     <div className="checkout-page">
@@ -215,46 +336,18 @@ export default function CheckoutPage() {
         <div className="checkout-layout">
           {/* ── FORM ── */}
           <form onSubmit={handlePlaceOrder} className="checkout-form">
+
+            {/* ── SECTION 1: GPS / MAP ── */}
             <div className="form-section">
               <div className="form-section-header">
-                <div className="form-section-icon"><MapPin size={17} /></div>
-                <h2 className="form-section-title">Delivery Details</h2>
-              </div>
-              <div className="field-group">
-                <label className="field-label">
-                  <MapPin size={11} />
-                  Delivery Address
-                  <span className="required-star">★</span>
-                  <span className="mandatory-badge">Required</span>
-                </label>
-                <div className="field-input-wrap">
-                  <span className="field-input-icon" style={{ top: 14 }}>
-                    <MapPin size={16} />
-                  </span>
-                  <textarea
-                    className="field-textarea"
-                    rows={3}
-                    placeholder="House / Flat no., Street, Area, Landmark — be as specific as possible"
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    required
-                  />
+                <div className="form-section-icon"><Navigation size={17} /></div>
+                <div className="form-section-title-group">
+                  <h2 className="form-section-title">Pin Your Location</h2>
+                  <p className="form-section-sub">GPS pin helps us find you faster — recommended</p>
                 </div>
-                <p className="field-hint">
-                  Include your full address with door number, street and any landmark for faster delivery.
-                </p>
               </div>
-            </div>
 
-            <div className="form-section">
               <div className="location-section">
-                <div className="location-header">
-                  <div className="form-section-icon"><Navigation size={16} /></div>
-                  <div className="location-header-text">
-                    <strong>Pin Your Location</strong>
-                    <span>Share your GPS location for precise delivery — highly recommended</span>
-                  </div>
-                </div>
                 <div className="loc-row">
                   <button
                     type="button"
@@ -262,8 +355,11 @@ export default function CheckoutPage() {
                     onClick={handleGetLocation}
                     disabled={locLoading}
                   >
-                    {locLoading ? <span className="spinner spinner--sm" /> : <Navigation size={15} />}
-                    {useLocation && coords ? 'Location Pinned' : 'Use My Location'}
+                    {locLoading
+                      ? <span className="spinner spinner--sm" />
+                      : <Navigation size={15} />
+                    }
+                    {locBtnLabel}
                   </button>
                   {useLocation && coords && (
                     <button type="button" className="loc-clear" onClick={handleRemoveLocation}>
@@ -271,6 +367,7 @@ export default function CheckoutPage() {
                     </button>
                   )}
                 </div>
+
                 {coords && (
                   <div className="map-wrapper">
                     <div className="map-label">
@@ -284,6 +381,56 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* ── SECTION 2: ADDRESS ── */}
+            <div className="form-section">
+              <div className="form-section-header">
+                <div className="form-section-icon"><MapPin size={17} /></div>
+                <div className="form-section-title-group">
+                  <h2 className="form-section-title">Delivery Address</h2>
+                  <p className="form-section-sub">Your full address for the delivery rider</p>
+                </div>
+              </div>
+
+              <div className="field-group">
+                <label className="field-label">
+                  Address
+                  <span className="required-star">★</span>
+                  <span className="mandatory-badge">Required</span>
+                  {autoFilled && (
+                    <span className="autofill-badge">
+                      <Navigation size={9} /> GPS filled
+                    </span>
+                  )}
+                </label>
+                <div className="field-input-wrap">
+                  <span className="field-input-icon">
+                    <MapPin size={16} />
+                  </span>
+                  <textarea
+                    className={`field-textarea${geocoding ? ' field-textarea--loading' : ''}`}
+                    rows={3}
+                    placeholder={geocoding ? 'Detecting your address…' : 'House / Flat no., Street, Area, Landmark — be as specific as possible'}
+                    value={address}
+                    onChange={e => { setAddress(e.target.value); setAutoFilled(false) }}
+                    required
+                    disabled={geocoding}
+                  />
+                  {geocoding && (
+                    <span className="field-geocoding-spinner">
+                      <span className="spinner spinner--sm" />
+                    </span>
+                  )}
+                </div>
+                <p className="field-hint">
+                  {autoFilled
+                    ? 'Auto-filled from GPS — feel free to add more details like flat/door number.'
+                    : 'Include door number, street and any landmark for faster delivery.'
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* ── SUBMIT ── */}
             <div className="form-submit-row">
               <button type="submit" className="place-order-btn" disabled={loading}>
                 {loading ? <span className="spinner" /> : <ShoppingBag size={18} />}
@@ -305,10 +452,7 @@ export default function CheckoutPage() {
             <div className="checkout-items">
               {items.map(item => (
                 <div key={item.productId} className="checkout-item">
-                  <CheckoutItemImage
-                    imageUrl={imageMap[item.productId]}
-                    name={item.productName}
-                  />
+                  <CheckoutItemImage imageUrl={imageMap[item.productId]} name={item.productName} />
                   <span className="ci-name">
                     {item.productName}
                     <span className="ci-qty"> ×{item.quantity}</span>

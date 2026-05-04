@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { cartApi } from '../services/api'
 import { AlertCircle } from 'lucide-react'
-import { registerPushForUser } from '../services/firebase';
+import { registerPushForUser } from '../services/firebase'
 import './Modal.css'
 
 export default function CustomerIdentityModal({ onClose, pendingProductId }) {
@@ -27,21 +27,23 @@ export default function CustomerIdentityModal({ onClose, pendingProductId }) {
     setLoading(true)
 
     try {
-        const phone = form.phone.trim()
+      const phone = form.phone.trim()
+      const oldPhone = localStorage.getItem('phone')
 
-        const oldPhone = localStorage.getItem("phone")
-
-        // 🔥 IF PHONE CHANGED → RESET EVERYTHING
-        if (oldPhone && oldPhone !== phone) {
-          localStorage.removeItem("push_registered")
-        }
+      // 🔥 IF PHONE CHANGED → RESET PUSH REGISTRATION
+      if (oldPhone && oldPhone !== phone) {
+        localStorage.removeItem('push_registered')
+      }
 
       // ✅ Save phone
-      localStorage.setItem("phone", phone)
+      localStorage.setItem('phone', phone)
 
-      // 🔔 Register push (non-blocking)
+      // 🔔 Notify PushInitializer in the same tab (storage event only fires in other tabs)
+      window.dispatchEvent(new StorageEvent('storage', { key: 'phone' }))
+
+      // 🔔 Also register push directly (fast path, non-blocking)
       registerPushForUser(phone).catch(err => {
-        console.error("Push registration failed:", err)
+        console.error('Push registration failed:', err)
       })
 
       // 🛒 Create cart

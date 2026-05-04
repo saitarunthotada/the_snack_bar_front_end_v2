@@ -67,34 +67,32 @@ export default function AdminOrdersPage() {
 
   const PAGE_SIZE = 10
 
-  const fetchOrders = async (
-    p = page,
-    s = search,
-    status = statusFilter,
-    from = fromDate,
-    to = toDate,
-  ) => {
-    setLoading(true)
-    try {
-      const isUUID = /^[0-9a-fA-F\-]{4,}$/.test(s)
-      const data = await adminApi.getOrders({
-        orderIdLike: isUUID ? s : undefined,
-        name:        !isUUID ? s : undefined,
-        status:      status || undefined,
-        fromDate:    from || undefined,
-        toDate:      to   || undefined,
-        page:        p,
-        size:        PAGE_SIZE,
-      })
-      setOrders(data.content || [])
-      setTotalElements(data.totalElements || 0)
-    } catch (err) {
-      console.error(err)
-      toast.error(err.message)
-    } finally {
-      setLoading(false)
-    }
+const fetchOrders = async (p = page, s = search, status = statusFilter, from = fromDate, to = toDate) => {
+  setLoading(true)
+  try {
+    const trimmed = s.trim()
+    
+    // Heuristic: looks like a UUID fragment (hex chars + dashes) → search by ID
+    const looksLikeId = /^[0-9a-f-]+$/i.test(trimmed)
+
+    const data = await adminApi.getOrders({
+      orderIdLike: (trimmed && looksLikeId)  ? trimmed : undefined,
+      name:        (trimmed && !looksLikeId) ? trimmed : undefined,
+      status:      status || undefined,
+      fromDate:    from   || undefined,
+      toDate:      to     || undefined,
+      page:        p,
+      size:        PAGE_SIZE,
+    })
+    setOrders(data.content || [])
+    setTotalElements(data.totalElements || 0)
+  } catch (err) {
+    console.error(err)
+    toast.error(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   useEffect(() => { fetchOrders(page, search, statusFilter, fromDate, toDate) }, [page])
 

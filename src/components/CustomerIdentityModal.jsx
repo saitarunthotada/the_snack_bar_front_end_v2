@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { cartApi } from '../services/api'
 import { AlertCircle } from 'lucide-react'
-import { registerPushForUser } from '../services/firebase'
 import './Modal.css'
 
 export default function CustomerIdentityModal({ onClose, pendingProductId }) {
@@ -33,18 +32,14 @@ export default function CustomerIdentityModal({ onClose, pendingProductId }) {
       // 🔥 IF PHONE CHANGED → RESET PUSH REGISTRATION
       if (oldPhone && oldPhone !== phone) {
         localStorage.removeItem('push_registered')
+        localStorage.removeItem('push_token')
       }
 
       // ✅ Save phone
       localStorage.setItem('phone', phone)
 
-      // 🔔 Notify PushInitializer in the same tab (storage event only fires in other tabs)
+      // 🔔 Dispatch storage event — PushInitializer handles registration
       window.dispatchEvent(new StorageEvent('storage', { key: 'phone' }))
-
-      // 🔔 Also register push directly (fast path, non-blocking)
-      registerPushForUser(phone).catch(err => {
-        console.error('Push registration failed:', err)
-      })
 
       // 🛒 Create cart
       const newCartId = await createCart(form.customerName.trim(), phone)

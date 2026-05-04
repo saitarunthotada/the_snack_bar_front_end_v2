@@ -1,8 +1,8 @@
+// src/services/firebase.js
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import toast from "react-hot-toast";
 
-// 🔧 Firebase config — all values from .env
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -11,7 +11,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// 🔥 Init
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
@@ -28,10 +27,17 @@ export const getDeviceToken = async () => {
     }
 
     const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-    await navigator.serviceWorker.ready;
+    await registration.update();
+
+    await new Promise((resolve) => {
+      if (registration.active) return resolve();
+      const sw = registration.installing || registration.waiting;
+      sw.addEventListener("statechange", (e) => {
+        if (e.target.state === "activated") resolve();
+      });
+    });
 
     const permission = await Notification.requestPermission();
-
     if (permission !== "granted") {
       throw new Error("Notification permission denied");
     }
@@ -66,6 +72,9 @@ export const registerPushForUser = async (phone) => {
   try {
     const token = await getDeviceToken();
 
+    // Cache token locally so PushInitializer can skip re-registration on next load
+    localStorage.setItem("push_token", token);
+
     const res = await fetch(`${BASE_URL}/api/device-token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,7 +102,6 @@ let isListenerAttached = false;
 
 export const listenForMessages = () => {
   if (isListenerAttached) return;
-
   isListenerAttached = true;
 
   onMessage(messaging, (payload) => {

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + '/api'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -165,8 +165,8 @@ export const adminApi = {
    * Body: { quantity, isAvailable }
    */
   updateInventory: async (productId, quantity) => {
-    const res = await api.patch(`/admin/products/${productId}/inventory`, {
-      quantity
+    const res = await api.patch(`${ADMIN_PREFIX}/products/${productId}/inventory`, {
+      quantity,
     })
     return res.data
   },
@@ -177,30 +177,30 @@ export const adminApi = {
    * Spring Page: { content: AdminOrderResponse[], totalElements, number, size }
    * AdminOrderResponse: { orderId, customerName, phone, status, totalAmount, createdAt, items }
    */
-getOrders: async ({
-  orderId,
-  orderIdLike,
-  phone,
-  name,
-  status,
-  fromDate,   // ← add
-  toDate,     // ← add
-  page = 0,
-  size = 10
-} = {}) => {
-  const res = await api.get(`${ADMIN_PREFIX}/orders`, {
-    params: {
-      orderId,
-      orderIdLike,
-      phone,
-      name,
-      status,
-      fromDate,   // ← add
-      toDate,     // ← add
-      page,
-      size,
-    },
-  }) 
+  getOrders: async ({
+    orderId,
+    orderIdLike,
+    phone,
+    name,
+    status,
+    fromDate,
+    toDate,
+    page = 0,
+    size = 10,
+  } = {}) => {
+    const res = await api.get(`${ADMIN_PREFIX}/orders`, {
+      params: {
+        orderId,
+        orderIdLike,
+        phone,
+        name,
+        status,
+        fromDate,
+        toDate,
+        page,
+        size,
+      },
+    })
     return res.data.data
   },
 
@@ -237,7 +237,9 @@ getOrders: async ({
       },
     })
     return res.data.data // Spring Page — use .content and .totalElements
-  },// GET /api/admin/zones
+  },
+
+  // GET /api/admin/zones
   getAllZones: async () => {
     const res = await api.get(`${ADMIN_PREFIX}/zones`)
     return res.data.data // List<DeliveryZoneResponse>
@@ -268,4 +270,3 @@ export const zoneApi = {
     return res.data // List<DeliveryZoneResponse>
   },
 }
-

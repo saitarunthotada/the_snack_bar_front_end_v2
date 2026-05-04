@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { cartApi } from '../services/api'
 import { AlertCircle } from 'lucide-react'
+import { registerPushForUser } from '../services/firebase';
 import './Modal.css'
 
 export default function CustomerIdentityModal({ onClose, pendingProductId }) {
@@ -12,22 +13,47 @@ export default function CustomerIdentityModal({ onClose, pendingProductId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
     if (!form.customerName.trim() || !form.phone.trim()) {
       setError('Both fields are required to continue')
       return
     }
+
     if (!/^[0-9]{10}$/.test(form.phone.trim())) {
       setError('Enter a valid 10-digit mobile number')
       return
     }
+
     setLoading(true)
+
     try {
-      const newCartId = await createCart(form.customerName.trim(), form.phone.trim())
+        const phone = form.phone.trim()
+
+        const oldPhone = localStorage.getItem("phone")
+
+        // 🔥 IF PHONE CHANGED → RESET EVERYTHING
+        if (oldPhone && oldPhone !== phone) {
+          localStorage.removeItem("push_registered")
+        }
+
+      // ✅ Save phone
+      localStorage.setItem("phone", phone)
+
+      // 🔔 Register push (non-blocking)
+      registerPushForUser(phone).catch(err => {
+        console.error("Push registration failed:", err)
+      })
+
+      // 🛒 Create cart
+      const newCartId = await createCart(form.customerName.trim(), phone)
+
       if (pendingProductId && newCartId) {
         await cartApi.addItem(newCartId, pendingProductId, 1)
         await fetchCart(newCartId)
       }
+
       onClose()
+
     } catch (err) {
       setError(err.message)
     } finally {
@@ -67,7 +93,10 @@ export default function CustomerIdentityModal({ onClose, pendingProductId }) {
               type="tel"
               placeholder="e.g. 9876543210"
               value={form.phone}
-              onChange={e => setForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+              onChange={e => setForm(p => ({
+                ...p,
+                phone: e.target.value.replace(/\D/g, '').slice(0, 10)
+              }))}
               maxLength={10}
               required
             />

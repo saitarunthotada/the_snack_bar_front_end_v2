@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import { Lock } from 'lucide-react'
 import './AdminLoginPage.css'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
 export default function AdminLoginPage() {
   const { login, loading, error, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -12,6 +14,21 @@ export default function AdminLoginPage() {
   useEffect(() => {
     if (isAdmin) navigate('/admin', { replace: true })
   }, [isAdmin])
+
+  // 🔥 Pre-emptively delete any customer push token as soon as the admin login
+  // page mounts. Reads last_customer_phone (survives login/logout cleanup) so
+  // this works even if 'phone' was already cleared in a previous admin session.
+  useEffect(() => {
+    const phone = localStorage.getItem('last_customer_phone')
+    if (!phone) return
+    fetch(`${BASE_URL}/api/device-token/${phone}`, { method: 'DELETE' })
+      .then(() => {
+        console.log('🗑️ [AdminLoginPage] Pre-emptively deleted device token for phone:', phone)
+        localStorage.removeItem('push_registered')
+        localStorage.removeItem('push_token')
+      })
+      .catch((e) => console.warn('[AdminLoginPage] Could not pre-delete device token:', e.message))
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

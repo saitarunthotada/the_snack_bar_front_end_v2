@@ -1,7 +1,6 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-// Config stamped at build time by vite.config.js — no runtime fetch needed
 firebase.initializeApp({
   apiKey:            "AIzaSyDouq2ghclS05gTAjeG3KGldI35axkC3a0",
   authDomain:        "thesnackbar-notifications.firebaseapp.com",

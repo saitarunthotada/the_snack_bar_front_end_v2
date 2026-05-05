@@ -35,11 +35,14 @@ export default function CustomerIdentityModal({ onClose, pendingProductId }) {
         localStorage.removeItem('push_token')
       }
 
-      // ✅ Save phone
+      // Save phone. Also write last_customer_phone — this key is NEVER cleared
+      // by the admin login/logout flow so token cleanup can always find the phone
+      // even after 'phone' itself has been removed from localStorage.
       localStorage.setItem('phone', phone)
+      localStorage.setItem('last_customer_phone', phone)
 
       // 🔔 Dispatch storage event — PushInitializer handles registration
-      window.dispatchEvent(new StorageEvent('storage', { key: 'phone' }))
+      window.dispatchEvent(new CustomEvent('phoneRegistered', { detail: { phone } }))
 
       // 🛒 Create cart
       const newCartId = await createCart(form.customerName.trim(), phone)

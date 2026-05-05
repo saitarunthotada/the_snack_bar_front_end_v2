@@ -1,16 +1,32 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Package, ShoppingBag, LogOut, Cookie, MessageSquare, MapPin } from 'lucide-react'
 import './AdminDashboard.css'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export default function AdminDashboard() {
   const { logout } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
+  // 🔥 When the dashboard mounts (including hard refresh while already logged in),
+  // ensure any stale customer token for this browser is gone from the backend.
+  // This covers the case where the admin bypasses the login page entirely.
+  useEffect(() => {
+    const phone = localStorage.getItem('last_customer_phone')
+    if (!phone) return
+    fetch(`${BASE_URL}/api/device-token/${phone}`, { method: 'DELETE' })
+      .then(() => {
+        console.log('🗑️ [AdminDashboard] Cleaned up customer device token for phone:', phone)
+        localStorage.removeItem('push_registered')
+        localStorage.removeItem('push_token')
+      })
+      .catch((e) => console.warn('[AdminDashboard] Could not clean up device token:', e.message))
+  }, [])
+
+  const handleLogout = async () => {
+    await logout()
     navigate('/admin/login', { replace: true })
   }
 

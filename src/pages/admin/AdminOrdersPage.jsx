@@ -19,6 +19,21 @@ import DateTimePicker from '../../components/DateTimePicker'
 
 const STATUS_OPTIONS = ['CREATED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']
 
+const FLOW_ORDER = ['CREATED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED']
+
+// Allowed transitions per status:
+// CREATED        → CONFIRMED, CANCELLED only
+// CONFIRMED+     → forward in flow (skip allowed) + CANCELLED
+// DELIVERED      → dead end
+// CANCELLED      → dead end
+const getAllowedTransitions = (current) => {
+  if (current === 'DELIVERED' || current === 'CANCELLED') return []
+  if (current === 'CREATED') return ['CONFIRMED', 'CANCELLED']
+  const idx = FLOW_ORDER.indexOf(current)
+  const forward = FLOW_ORDER.slice(idx + 1)
+  return [...forward, 'CANCELLED']
+}
+
 const STATUS_ICONS = {
   CREATED:          <FilePlus size={13} strokeWidth={2.2} />,
   CONFIRMED:        <CheckCircle size={13} strokeWidth={2.2} />,
@@ -63,7 +78,7 @@ export default function AdminOrdersPage() {
   const [toDate, setToDate] = useState('')
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
-  const [updatingId, setUpdatingId] = useState(null)
+  const [updatingId, setUpdatingId] = useState(null)   // { orderId, status } | null
 
   const PAGE_SIZE = 10
 
@@ -124,7 +139,7 @@ const fetchOrders = async (p = page, s = search, status = statusFilter, from = f
   const hasDateFilter = fromDate || toDate
 
   const handleStatusChange = async (orderId, newStatus) => {
-    setUpdatingId(orderId)
+    setUpdatingId({ orderId, status: newStatus })
     try {
       await adminApi.updateOrderStatus(orderId, newStatus)
       toast.success('Status updated!')
@@ -276,21 +291,25 @@ const fetchOrders = async (p = page, s = search, status = statusFilter, from = f
                     <div className="od-status-change">
                       <h4>Update Status</h4>
                       <div className="status-buttons">
-                        {STATUS_OPTIONS
-                          .filter(s => s !== order.status)
-                          .map(s => (
-                            <button
-                              key={s}
-                              className={`status-btn ${STATUS_CLASS[s]}`}
-                              onClick={() => handleStatusChange(order.orderId, s)}
-                              disabled={updatingId === order.orderId}
-                            >
-                              {updatingId === order.orderId
-                                ? <span className="spinner dark" />
-                                : <StatusLabel status={s} />
-                              }
-                            </button>
-                          ))}
+                        {getAllowedTransitions(order.status).map(s => {
+                            const isThisUpdating =
+                              updatingId?.orderId === order.orderId &&
+                              updatingId?.status === s
+                            const anyUpdating = updatingId?.orderId === order.orderId
+                            return (
+                              <button
+                                key={s}
+                                className={`status-btn ${STATUS_CLASS[s]}`}
+                                onClick={() => handleStatusChange(order.orderId, s)}
+                                disabled={anyUpdating}
+                              >
+                                {isThisUpdating
+                                  ? <span className="spinner dark" />
+                                  : <StatusLabel status={s} />
+                                }
+                              </button>
+                            )
+                          })}
                       </div>
                     </div>
                   ) : (

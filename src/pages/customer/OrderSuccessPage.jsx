@@ -49,7 +49,7 @@ export default function OrderSuccessPage() {
         {/* Sub-text block */}
         <div className="success-sub-block">
           <p className="success-sub">
-            Your order has been received and is now being prepared with care.
+            Your order is placed! We've received it and will confirm shortly.
           </p>
           <div className="success-delivery-estimate">
             <Clock size={14} strokeWidth={2} />

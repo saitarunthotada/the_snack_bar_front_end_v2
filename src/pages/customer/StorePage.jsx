@@ -20,13 +20,50 @@ const WHATSAPP_MSG = encodeURIComponent('Hi! I have a question about my order.')
 const WHATSAPP_AREA_MSG = encodeURIComponent("Hi! I'd like to check if you deliver to my area.")
 const STALL_MAPS_URL = 'https://maps.app.goo.gl/YMzNUgBoYs5MW4EJA'
 
+// ── Stall hours (IST) — change these two lines to update hours ──
+const OPEN_HOUR  = 11   // 11:00 AM
+const CLOSE_HOUR = 19   // 7:00 PM
+
+function getStallStatus() {
+  const now = new Date()
+  // Convert to IST (UTC+5:30)
+  const ist = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + 5.5 * 60 * 60 * 1000)
+  const totalMinutes   = ist.getHours() * 60 + ist.getMinutes()
+  const openMinutes    = OPEN_HOUR  * 60
+  const closeMinutes   = CLOSE_HOUR * 60
+
+  if (totalMinutes >= openMinutes && totalMinutes < closeMinutes) {
+    const minsLeft = closeMinutes - totalMinutes
+    if (minsLeft <= 30) {
+      return { open: true, label: `Closing soon · closes at ${CLOSE_HOUR % 12 || 12} PM` }
+    }
+    return {
+      open: true,
+      label: `Open Now · ${OPEN_HOUR % 12 || 12} AM – ${CLOSE_HOUR % 12 || 12} PM`,
+    }
+  }
+
+  if (totalMinutes < openMinutes) {
+    const minsUntil = openMinutes - totalMinutes
+    if (minsUntil <= 60) {
+      const h = Math.floor(minsUntil / 60)
+      const m = minsUntil % 60
+      const parts = [...(h ? [`${h}h`] : []), ...(m ? [`${m}m`] : [])]
+      return { open: false, label: `Closed · Opens in ${parts.join(' ')}` }
+    }
+    return { open: false, label: `Closed · Opens today at ${OPEN_HOUR % 12 || 12} AM` }
+  }
+
+  // Past closing time
+  return { open: false, label: `Closed · Reopens tomorrow at ${OPEN_HOUR % 12 || 12} AM` }
+}
+
 const STALL_LOCATIONS = [
   {
     name: 'A.U. Outgate Stall',
     address: 'Andhra University Out Gate, Waltair, Visakhapatnam',
     note: 'Main stall — open daily',
     mapsUrl: STALL_MAPS_URL,
-    status: 'Open Now',
   },
 ]
 
@@ -46,9 +83,16 @@ export default function StorePage() {
   const [showModal, setShowModal]               = useState(false)
   const [pendingProductId, setPendingProductId] = useState(null)
   const [zones, setZones]                       = useState([])
+  const [stallStatus, setStallStatus]           = useState(getStallStatus)
 
   const productsRef = useRef(null)
   const totalPages  = Math.ceil(total / PAGE_SIZE)
+
+  // Re-check stall status every minute so it updates live
+  useEffect(() => {
+    const id = setInterval(() => setStallStatus(getStallStatus()), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   const fetchProducts = useCallback(async (p) => {
     setLoading(true)
@@ -237,10 +281,13 @@ export default function StorePage() {
                 rel="noopener noreferrer"
                 className="stall-badge"
               >
-                <span className="stall-pulse-dot" />
+                <span
+                  className="stall-pulse-dot"
+                  style={stallStatus.open ? undefined : { background: '#999', animation: 'none' }}
+                />
                 <div className="stall-badge-text">
                   <strong>{stall.name}</strong>
-                  <span>{stall.address}</span>
+                  <span>{stallStatus.label}</span>
                 </div>
                 <ExternalLink size={13} className="stall-badge-icon" strokeWidth={2} />
               </a>
@@ -309,9 +356,17 @@ export default function StorePage() {
                   <span>{stall.name}</span>
                 </div>
                 <p className="footer-text footer-stall-address">{stall.address}</p>
-                <p className="footer-stall-status">
-                  <Radio size={11} strokeWidth={2.5} className="stall-live-icon" />
-                  {stall.status}
+                <p
+                  className="footer-stall-status"
+                  style={stallStatus.open ? undefined : { color: '#888' }}
+                >
+                  <Radio
+                    size={11}
+                    strokeWidth={2.5}
+                    className={stallStatus.open ? 'stall-live-icon' : undefined}
+                    style={stallStatus.open ? undefined : { opacity: 0.4 }}
+                  />
+                  {stallStatus.label}
                 </p>
                 <a
                   href={stall.mapsUrl}
